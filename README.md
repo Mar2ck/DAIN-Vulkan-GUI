@@ -8,6 +8,15 @@ Mode 3 & 4 support (timestamp modes)
 
 Progress bar
 
+## Errors
+"vkQueueSubmit failed" happens when there isn't enough VRAM for the current frame. Use a lower tile size
+
+## Tips
+By default the program will process two frames at once (`-j 1:2:2`). This allows for the GPU to be used almost 100% of the time instead of pausing everytime a frame needs to be saved/loaded. The downside of this is that two frames will be in memory at once so a lower tile size will be needed.
+You can switch to one file at a time (like DAIN-APP) by using `-j 1:1:2` which will let you use a larger tilesize
+
+Tiles are used by default which can slow down processing. Using a tilesize larger then the video's resolution eg. `-t 4096` will disable tiles and process the video all at once
+
 ## Usage
 ```
 usage: DAINVulkanStep2.py [-h] [-s FRAMEMULTIPLIER] [--verbose] [-g GPUID] [-t TILESIZE]
