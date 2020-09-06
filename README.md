@@ -66,5 +66,5 @@ optional arguments:
                         multi-gpu
 ```
 
-##Credits
+## Credits
 https://github.com/nihui/dain-ncnn-vulkan Original program that this project is a wrapper for
