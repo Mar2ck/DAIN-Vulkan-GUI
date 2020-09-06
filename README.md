@@ -6,6 +6,9 @@ Add windows support
 
 Mode 3 & 4 support (timestamp modes)
 
+Progress bar
+
+## Usage
 ```
 usage: DAINVulkanStep2.py [-h] [-s FRAMEMULTIPLIER] [--verbose] [-g GPUID] [-t TILESIZE]
                           [-j THREADCOUNT]
