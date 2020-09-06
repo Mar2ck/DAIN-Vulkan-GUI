@@ -39,10 +39,13 @@ if args.threadcount == None:
 	args.threadcount = "1:2:2"
 
 #Variables
-DainVulkanLocation = os.path.abspath("./dain-ncnn-vulkan/dain-ncnn-vulkan-ubuntu-20.04/")
+DainVulkanLinuxLocation = os.path.abspath("./dain-ncnn-vulkan/dain-ncnn-vulkan-ubuntu-20.04/")
+#DainVulkanWindowsLocation = os.path.abspath(".\\dain-ncnn-vulkan\\dain-ncnn-vulkan-windows-2019")
 DainInputFolder = os.path.join(args.DainAppFolder, "original_frames")
 DainInputFiles = sorted([f for f in listdir(DainInputFolder) if isfile(join(DainInputFolder, f))])
 DainOutputFolder = os.path.join(args.DainAppFolder, "interpolated_frames")
+if not os.path.exists(DainOutputFolder):
+    os.makedirs(DainOutputFolder)
 DainOutputFrameCount = str(len(DainInputFiles) * MultiplierFloat)
 
 if args.verbose == True:
@@ -58,13 +61,13 @@ def DainVulkanFileModeCommand(Input0File, Input1File, OutputFile, TimeStep):
 	#Default to 0.5 if not specified
 	if TimeStep == None:
 		TimeStep = "0.5"
-	subprocess.run(["./dain-ncnn-vulkan", "-0", os.path.abspath(Input0File), "-1", os.path.abspath(Input1File), "-o", os.path.abspath(OutputFile), "-s", TimeStep, "-t", args.tilesize, "-g", args.gpuid, "-j", args.threadcount], cwd=DainVulkanLocation)
+	subprocess.run(["./dain-ncnn-vulkan", "-0", os.path.abspath(Input0File), "-1", os.path.abspath(Input1File), "-o", os.path.abspath(OutputFile), "-s", TimeStep, "-t", args.tilesize, "-g", args.gpuid, "-j", args.threadcount], cwd=DainVulkanLinuxLocation)
 
 def DainVulkanFolderModeCommand(InputFolder, OutputFolder, TargetFrames):
-	if sys.platform == "windows":
-		subprocess.run(["dain-ncnn-vulkan.exe", "-i", os.path.abspath(InputFolder), "-o", os.path.abspath(OutputFolder), "-n", TargetFrames, "-t", args.tilesize, "-g", args.gpuid, "-j", args.threadcount], cwd=DainVulkanLocation)
+	if sys.platform == "win32":
+		subprocess.run([".\\dain-ncnn-vulkan.exe", "-i", os.path.abspath(InputFolder), "-o", os.path.abspath(OutputFolder), "-n", TargetFrames, "-t", args.tilesize, "-g", args.gpuid, "-j", args.threadcount])
 	else:
-		subprocess.run(["./dain-ncnn-vulkan", "-i", os.path.abspath(InputFolder), "-o", os.path.abspath(OutputFolder), "-n", TargetFrames, "-t", args.tilesize, "-g", args.gpuid, "-j", args.threadcount], cwd=DainVulkanLocation)
+		subprocess.run(["./dain-ncnn-vulkan", "-i", os.path.abspath(InputFolder), "-o", os.path.abspath(OutputFolder), "-n", TargetFrames, "-t", args.tilesize, "-g", args.gpuid, "-j", args.threadcount], cwd=DainVulkanLinuxLocation)
 
 
 DainVulkanFolderModeCommand(DainInputFolder, DainOutputFolder, DainOutputFrameCount)
