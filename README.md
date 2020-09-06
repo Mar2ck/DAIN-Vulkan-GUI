@@ -65,3 +65,6 @@ optional arguments:
                         Thread count for load/process/save (default=1:2:2) can be 1:2,2,2:2 for
                         multi-gpu
 ```
+
+##Credits
+https://github.com/nihui/dain-ncnn-vulkan Original program that this project is a wrapper for
