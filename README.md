@@ -33,7 +33,8 @@ For example, if you picked Interpolate 4x in DAIN-APP then use `-s 4` in this pr
 * Perfect loop
 
 ### Needs to be fixed by Dain-ncnn author
-* Tile overlap (artifacting on motion when using tiles)
+* Add Tile overlap (artifacting on motion when using tiles)
+* Transparency (just causes glitchy output currently)
 
 ## Tips
 By default the program will process two frames at once (`-j 1:2:2`). This allows for the GPU to be used almost 100% of the time instead of pausing everytime a frame needs to be saved/loaded. The downside of this is that two frames will be in memory at once so a lower tile size will be needed.
