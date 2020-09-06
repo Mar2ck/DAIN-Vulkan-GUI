@@ -4,12 +4,24 @@
 
 Add windows support
 
-Mode 3 & 4 support (timestamp modes)
+Mode 3 & 4 support
 
 Progress bar
 
 ## Errors
 "vkQueueSubmit failed" happens when there isn't enough VRAM for the current frame. Use a lower tile size
+
+## Parity with DAIN-APP
+### What works
+* Mode 1 & 2 (Sequential modes)
+* 2x, 3x, 4x, 5x, etc. Interpolation
+
+### What doesn't work
+* Mode 3 & 4 (Timestamp modes)
+* Perfect loop
+
+### Needs to be fixed by Dain-ncnn author
+* Tile overlap (artifacting on motion when using tiles)
 
 ## Tips
 By default the program will process two frames at once (`-j 1:2:2`). This allows for the GPU to be used almost 100% of the time instead of pausing everytime a frame needs to be saved/loaded. The downside of this is that two frames will be in memory at once so a lower tile size will be needed.
