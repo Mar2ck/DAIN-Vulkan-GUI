@@ -2,8 +2,10 @@
 
 ## Todo
 
+Add windows support
+
 Add multiplyers past 2x
 
 Add tile size passthrough
 
-Add mode 3 & 4
+Mode 3 & 4 support (timestamp modes)
