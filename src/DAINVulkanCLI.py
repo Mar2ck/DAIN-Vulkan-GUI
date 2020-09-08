@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
-try:
-    import argparse
-    import pathlib
-    import tempfile
-    import subprocess
-    import sys
-    import os
-except ImportError as err:
-    print("Error: ", err)
-    print("Could not import modules. Make sure all dependencies are installed.")
-    exit(1)
+
+import argparse
+import pathlib
+import tempfile
+import subprocess
+import sys
+import os
 
 programLocation = os.path.dirname(os.path.abspath(__file__))
 
@@ -72,7 +68,7 @@ if __name__ == "__main__":
                         default="2")
     parser.add_argument("-fps", "--target-fps", help="[Unimplemented]Calculates multiplier based on target framerate",
                         action="store")
-    ## Dain-ncnn-vulkan passthrough options
+    ## Dain-ncnn-vulkan pass-through options
     parser.add_argument("-g", "--gpu-id", help="GPU to use (default=auto) can be 0,1,2 for multi-gpu", action="store")
     parser.add_argument("-t", "--tilesize",
                         help="Tile size (>=128, default=256) must be multiple of 32 ,can be 256,256,128 for multi-gpu",
@@ -95,14 +91,14 @@ if __name__ == "__main__":
         exit(1)
 
     # Override global variables with arguments
-    if args.gpu_id != None:
+    if args.gpu_id is not None:
         dainGpuId = args.gpu_id
-    if args.thread_count != None:
+    if args.thread_count is not None:
         dainThreads = args.thread_count
-    if args.tilesize != None:
+    if args.tilesize is not None:
         dainTileSize = args.tilesize
 
-    if args.steps == None:
+    if args.steps is None:
         stepsSelection = None
     else:
         stepsSelection = args.steps.split(",")
@@ -110,7 +106,7 @@ if __name__ == "__main__":
     print("GPU Selection:", dainGpuId)
     print("Threads:", dainThreads)
     print("Tilesize:", dainTileSize)
-    if args.verbose == True:
+    if args.verbose is True:
         print("Platform:", sys.platform)
         if os.path.exists(dainNcnnVulkanBinaryLocation):
             print("Using dain-ncnn-vulkan at", dainNcnnVulkanBinaryLocation)
@@ -133,7 +129,7 @@ if __name__ == "__main__":
     dainOutputVideosFolder = os.path.join(dainWorkingFolder, "output_videos")
     pathlib.Path(dainOutputVideosFolder).mkdir(parents=True, exist_ok=True)
 
-    if (stepsSelection == None) or ("1" in stepsSelection):
+    if (stepsSelection is None) or ("1" in stepsSelection):
         print("Extracting frames to original_frames")
         FfmpegExtractFrames(inputFile, dainOriginalFramesFolder)
 
@@ -147,11 +143,11 @@ if __name__ == "__main__":
     dainInterpolatedFramesCount = dainOriginalFramesCount * MultiplierFloat
     print("Interpolated frame count", dainInterpolatedFramesCount)
 
-    if (stepsSelection == None) or ("2" in stepsSelection):
+    if (stepsSelection is None) or ("2" in stepsSelection):
         print("Processing frames to interpolated_frames")
         DainVulkanFolderModeCommand(dainOriginalFramesFolder, dainInterpolatedFramesFolder,
                                     str(dainInterpolatedFramesCount))
 
-    if (stepsSelection == None) or ("1" in stepsSelection):
+    if (stepsSelection is None) or ("1" in stepsSelection):
         print("Extracting frames to original_frames")
         FfmpegEncodeFrames(dainInterpolatedFramesFolder, dainOutputVideosFolder, "48")
