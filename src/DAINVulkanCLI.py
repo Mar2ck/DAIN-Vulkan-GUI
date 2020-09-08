@@ -19,10 +19,6 @@ dainNcnnVulkanLinuxBinaryLocation = os.path.abspath(os.path.join(programLocation
 dainGpuId = "auto"
 dainThreads = "1:2:2"
 dainTileSize = "256"
-dainWorkingFolder = None
-dainOriginalFramesFolder = None
-dainInterpolatedFramesFolder = None
-dainOutputFramesFolder = None
 
 if sys.platform == "win32":
 	dainNcnnVulkanBinaryLocation = dainNcnnVulkanWindowsBinaryLocation
@@ -30,25 +26,6 @@ if sys.platform == "win32":
 else:
 	dainNcnnVulkanBinaryLocation = dainNcnnVulkanLinuxBinaryLocation
 	dainVulkanExec = os.path.join(".", "dain-ncnn-vulkan")
-
-def SetupWorkingFolderStructure(outputFolder, inputFile): # Creates folders for working directory and returns the paths to them
-	# Setup working folder
-	global dainWorkingFolder
-	dainWorkingFolder = os.path.join(outputFolder, pathlib.Path(inputFile).stem)
-	pathlib.Path(dainWorkingFolder).mkdir(parents=True, exist_ok=True)
-	# Setup original_frames folder
-	global dainOriginalFramesFolder
-	dainOriginalFramesFolder = os.path.join(dainWorkingFolder, "original_frames")
-	pathlib.Path(dainOriginalFramesFolder).mkdir(parents=True, exist_ok=True)
-	# Setup interpolated_frames folder
-	global dainInterpolatedFramesFolder
-	dainInterpolatedFramesFolder = os.path.join(dainWorkingFolder, "interpolated_frames")
-	pathlib.Path(dainInterpolatedFramesFolder).mkdir(parents=True, exist_ok=True)
-	# Setup output_videos folder
-	global dainOutputFramesFolder
-	dainOutputFramesFolder = os.path.join(dainWorkingFolder, "output_videos")
-	pathlib.Path(dainOutputFramesFolder).mkdir(parents=True, exist_ok=True)
-	return{"dainWorkingFolder":dainWorkingFolder,"dainOriginalFramesFolder":dainOriginalFramesFolder,"dainInterpolatedFramesFolder":dainInterpolatedFramesFolder,"dainOutputFramesFolder":dainOutputFramesFolder}
 
 # DAIN Process Functions
 def DainVulkanFileModeCommand(Input0File, Input1File, OutputFile, TimeStep):
@@ -67,7 +44,7 @@ def FfmpegExtractFrames(InputFile, OutputFolder): # "Step 1"
 	subprocess.run(command)
 def FfmpegEncodeFrames(InputFolder, OutputFile, Framerate):
 	# ffmpeg -framerate 48 -i interpolated_frames/%06d.png output.mp4
-	command = ["ffmpeg", "-framerate", Framerate, "-i", InputFolder, OutputFile]
+	command = ["ffmpeg", "-framerate", Framerate, "-i", os.path.join(InputFolder, "%06d.png"), OutputFile]
 	subprocess.run(command)
 
 if __name__ == "__main__":
@@ -85,7 +62,7 @@ if __name__ == "__main__":
 	parser.add_argument("-t", "--tilesize", help="Tile size (>=128, default=256) must be multiple of 32 ,can be 256,256,128 for multi-gpu", action="store")
 	parser.add_argument("-j", "--thread-count", help="Thread count for load/process/save (default=1:2:2) can be 1:2,2,2:2 for multi-gpu", action="store")
 	## Step arguments
-	parser.add_argument("--steps", help="[Unimplemented]If specified only run certain steps 1,2,3 (eg. 1,2 for 1 & 2 only)", action="store")
+	parser.add_argument("--steps", help="If specified only run certain steps 1,2,3 (eg. 1,2 for 1 & 2 only)", action="store")
 	## Debug options
 	parser.add_argument("--input-fps", help="Manually specify framerate of input video", action="store")
 	parser.add_argument("--verbose", help="Print additional info to the commandline", action="store_true")
@@ -105,6 +82,11 @@ if __name__ == "__main__":
 	if args.tilesize != None:
 		dainTileSize = args.tilesize
 	
+	if args.steps == None:
+		stepsSelection = None
+	else:
+		stepsSelection = args.steps.split(",")
+	
 	print("GPU Selection:", dainGpuId)
 	print("Threads:", dainThreads)
 	print("Tilesize:", dainTileSize)
@@ -117,25 +99,25 @@ if __name__ == "__main__":
 	outputFolder = os.path.abspath(args.output_folder)
 	print("Input file:", inputFile)
 	
-	# # Setup working folder
-	# dainWorkingFolder = os.path.join(outputFolder, pathlib.Path(inputFile).stem)
-	# pathlib.Path(dainWorkingFolder).mkdir(parents=True, exist_ok=True)
-	# print("Working Directory:", dainWorkingFolder)
-	# ## Setup original_frames folder
-	# dainOriginalFramesFolder = os.path.join(dainWorkingFolder, "original_frames")
-	# pathlib.Path(dainOriginalFramesFolder).mkdir(parents=True, exist_ok=True)
-	# ## Setup interpolated_frames folder
-	# dainInterpolatedFramesFolder = os.path.join(dainWorkingFolder, "interpolated_frames")
-	# pathlib.Path(dainInterpolatedFramesFolder).mkdir(parents=True, exist_ok=True)
-	# ## Setup output_videos folder
-	# dainOutputFramesFolder = os.path.join(dainWorkingFolder, "output_videos")
-	# pathlib.Path(dainInterpolatedFramesFolder).mkdir(parents=True, exist_ok=True)
+
+	# Setup working folder
+	dainWorkingFolder = os.path.join(outputFolder, pathlib.Path(inputFile).stem)
+	pathlib.Path(dainWorkingFolder).mkdir(parents=True, exist_ok=True)
+	print("Working Directory:", dainWorkingFolder)
+	## Setup original_frames folder
+	dainOriginalFramesFolder = os.path.join(dainWorkingFolder, "original_frames")
+	pathlib.Path(dainOriginalFramesFolder).mkdir(parents=True, exist_ok=True)
+	## Setup interpolated_frames folder
+	dainInterpolatedFramesFolder = os.path.join(dainWorkingFolder, "interpolated_frames")
+	pathlib.Path(dainInterpolatedFramesFolder).mkdir(parents=True, exist_ok=True)
+	## Setup output_videos folder
+	dainOutputVideosFolder = os.path.join(dainWorkingFolder, "output_videos")
+	pathlib.Path(dainOutputVideosFolder).mkdir(parents=True, exist_ok=True)
+		
+	if (stepsSelection == None) or ("1" in stepsSelection):
+		print("Extracting frames to original_frames")
+		FfmpegExtractFrames(inputFile, dainOriginalFramesFolder)
 	
-	SetupWorkingFolderStructure(outputFolder, inputFile)
-	# Step 1: Extract frames to folder
-	FfmpegExtractFrames(inputFile, dainOriginalFramesFolder)
-	
-	# Calculat
 	print("Interpolation Multiplier:", MultiplierFloat)
 	## Analyse original frames
 	dainOriginalFramesArray = sorted([f for f in os.listdir(dainOriginalFramesFolder) if os.path.isfile(os.path.join(dainOriginalFramesFolder, f))])
@@ -145,7 +127,11 @@ if __name__ == "__main__":
 	dainInterpolatedFramesCount = dainOriginalFramesCount * MultiplierFloat
 	print("Interpolated frame count", dainInterpolatedFramesCount)
 	
-	# Step 2: Interpolate to second folder
-	DainVulkanFolderModeCommand(dainOriginalFramesFolder, dainInterpolatedFramesFolder, str(dainInterpolatedFramesCount))
+	if (stepsSelection == None) or ("2" in stepsSelection):
+		print("Processing frames to interpolated_frames")
+		DainVulkanFolderModeCommand(dainOriginalFramesFolder, dainInterpolatedFramesFolder, str(dainInterpolatedFramesCount))
 	
-	# Step 3: Encode
+	if (stepsSelection == None) or ("1" in stepsSelection):
+		print("Extracting frames to original_frames")
+		FfmpegEncodeFrames(dainInterpolatedFramesFolder, dainOutputVideosFolder, "48")
+
