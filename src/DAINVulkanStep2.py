@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 try:
+	import argparse
 	import subprocess
 	import sys
 	import os
-	import argparse
-	import platform
+	#import platform
 	from shutil import copyfile
-	from os import listdir
-	from os.path import isfile, join
 except ImportError as err:
 	print("Error: ", err)
 	print("Could not import modules. Make sure all dependencies are installed.")
@@ -38,11 +36,11 @@ if args.tilesize == None:
 if args.threadcount == None:
 	args.threadcount = "1:2:2"
 
-#Variables
+# Variables
 DainVulkanLinuxLocation = os.path.abspath("./dain-ncnn-vulkan/dain-ncnn-vulkan-ubuntu-20.04/")
-#DainVulkanWindowsLocation = os.path.abspath(".\\dain-ncnn-vulkan\\dain-ncnn-vulkan-windows-2019")
+DainVulkanWindowsLocation = os.path.abspath(".\\dain-ncnn-vulkan\\dain-ncnn-vulkan-windows-2019")
 DainInputFolder = os.path.join(args.DainAppFolder, "original_frames")
-DainInputFiles = sorted([f for f in listdir(DainInputFolder) if isfile(join(DainInputFolder, f))])
+DainInputFiles = sorted([f for f in os.listdir(DainInputFolder) if os.path.isfile(os.path.join(DainInputFolder, f))])
 DainOutputFolder = os.path.join(args.DainAppFolder, "interpolated_frames")
 if not os.path.exists(DainOutputFolder):
     os.makedirs(DainOutputFolder)
@@ -56,9 +54,9 @@ if args.verbose == True:
 	print("Outputframe Count:", DainOutputFrameCount)
 	print("Platform:", sys.platform)
 
-#DAIN Process Functions
+# DAIN Process Functions
 def DainVulkanFileModeCommand(Input0File, Input1File, OutputFile, TimeStep):
-	#Default to 0.5 if not specified
+	# Default to 0.5 if not specified
 	if TimeStep == None:
 		TimeStep = "0.5"
 	subprocess.run(["./dain-ncnn-vulkan", "-0", os.path.abspath(Input0File), "-1", os.path.abspath(Input1File), "-o", os.path.abspath(OutputFile), "-s", TimeStep, "-t", args.tilesize, "-g", args.gpuid, "-j", args.threadcount], cwd=DainVulkanLinuxLocation)
@@ -72,8 +70,8 @@ def DainVulkanFolderModeCommand(InputFolder, OutputFolder, TargetFrames):
 
 DainVulkanFolderModeCommand(DainInputFolder, DainOutputFolder, DainOutputFrameCount)
 
-#Mode 1&2 Implement
-#currentFileName = 1
+# Mode 1&2 Implement
+# currentFileName = 1
 # for FileNumber in range(len(DainInputFiles)):
 # 	#Copy Original Frames
 # 	currentFrame = os.path.join(DainInputFolder, DainInputFiles[FileNumber])

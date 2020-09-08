@@ -1,2 +1,0 @@
-https://github.com/nihui/dain-ncnn-vulkan
-Buids from commit ebe50ce
