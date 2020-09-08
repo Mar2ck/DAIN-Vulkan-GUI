@@ -1,44 +1,32 @@
 # DAIN-Vulkan-GUI
+AI-Powered video interpolater (eg. 30fps -> 60fps) for Vulkan devices. Based on dain-ncnn-vulkan and ffmpeg
 
-DAINVulkanStep2: Uses frames extracted by DAIN-APP and interpolates them using Vulkan instead of CUDA
+WIP Software so expect bugs, GUI soon™
 
-WIP Software so expect bugs
 ## Usage
-Use DAIN-APP to extract a video using Step 1, find the folder it made that contains "config.json" and put the path of that folder in this program:
+Windows: `.\DAINVulkanCLI.exe -i "C:\Users\example\Videos\test.mp4" --output-folder "C:\Users\example\Videos\DainAppFolder"`
 
-Windows: `.\DAINVulkanStep2.exe "C:\Users\default\Videos\DainAppFolder"`
-
-Linux: `./DAINVulkanStep2 "/home/default/Video/DainAppFolder"`
-
-For example, if you picked Interpolate 4x in DAIN-APP then use `-s 4` in this program. Scroll down to the Help page for more options
-
-## Todo
-
-* Mode 3 & 4 support
-
-* Progress bar
-
-* GUI
+Linux: `./DAINVulkanCLI" -i "/home/example/Videos/test.mp4" --output-folder "/home/example/Videos/DainAppFolder"`
 
 ## Errors
-"vkQueueSubmit failed" happens when there isn't enough VRAM for the current frame. Use a lower tile size
+"vkQueueSubmit failed" and "vkAllocateMemory failed" happens when there isn't enough VRAM for the current frame. Use a lower tile size or downscale the video. 
 
-## Parity with DAIN-APP
+## Features
 ### What works
-* Mode 1 & 2 (Sequential modes)
-* 2x, 3x, 4x, 5x, etc. Interpolation
+* Sequential frame handling (Removed frames affect video length)
+* 2x, 3x, 4x, 5x, etc. Multiplier-target
 
 ### What doesn't work
-* Mode 3 & 4 (Timestamp modes)
-* Perfect loop
+* Timestamp frame handling (Video length preserved, times between frames accounted for)
+* Perfect loop mode (Last frame leads into the first)
+* Framerate-target
 
 ### Needs to be fixed by Dain-ncnn author
-* Add Tile overlap (artifacting on motion when using tiles)
-* Transparency (just causes glitchy output currently)
+* Tiles don't overlap (artifacting when using tiles)
+* Transparency (glitchy output currently)
 
 ## Tips
-By default the program will process two frames at once (`-j 1:2:2`). This allows for the GPU to be used almost 100% of the time instead of pausing everytime a frame needs to be saved/loaded. The downside of this is that two frames will be in memory at once so a lower tile size will be needed.
-You can switch to one file at a time (like DAIN-APP) by using `-j 1:1:2` which will let you use a larger tilesize
+By default the program will process two frames at once (`-j 1:2:2`). This allows for the GPU to be used almost 100% of the time instead of pausing everytime a frame needs to be saved/loaded. The downside of this is that two frames will be in memory at once so a lower tile size will be needed if there isn't enough VRAM. You can switch to one file at a time (like DAIN-APP) by using `-j 1:1:1` which will let you use a larger tilesize/no tiles. 
 
 Tiles are used by default which can slow down processing. Using a tilesize that's as big as the video's resolution will disable tiles and process the frame all at once. Eg. 720p = 1280x720 so use `-t 1280`
 
@@ -67,4 +55,6 @@ optional arguments:
 ```
 
 ## Credits
-https://github.com/nihui/dain-ncnn-vulkan Original program that this project is a wrapper for
+https://github.com/nihui/dain-ncnn-vulkan Interpolation program that this project is a wrapper for
+
+https://ffmpeg.org/ All in one program for video decoding/encoding
