@@ -16,7 +16,7 @@ Linux: `./DAINVulkanCLI" -i "/home/example/Videos/test.mp4" --output-folder "/ho
 * Sequential frame handling (Removed frames affect video length)
 * 2x, 3x, 4x, 5x, etc. Multiplier-target
 
-### What doesn't work
+### Not implemented yet
 * Timestamp frame handling (Video length preserved, times between frames accounted for)
 * Perfect loop mode (Last frame leads into the first)
 * Framerate-target
