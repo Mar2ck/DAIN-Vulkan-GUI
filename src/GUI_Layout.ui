@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>365</width>
-    <height>171</height>
+    <width>460</width>
+    <height>306</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -79,7 +79,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>ffmpeg</string>
+           <string>GO</string>
           </property>
          </widget>
         </item>
@@ -94,7 +94,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>365</width>
+     <width>460</width>
      <height>21</height>
     </rect>
    </property>

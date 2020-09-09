@@ -1,4 +1,5 @@
 import os
+import subprocess
 import sys
 
 from PyQt5 import QtWidgets, uic
@@ -16,17 +17,16 @@ class Ui(QtWidgets.QMainWindow):
             self.input_label.setText(input_file[0])
 
     def output_file_dialog_box(self):
-        output_dir = QFileDialog.getSaveFileName(None, 'Save File', os.getenv('HOME'), 'Videos (*.mp4; *.mkv; *.webm; '
-                                                                                       '*gif);; All Files (*)')
-        if not output_dir[0]:
+        output_dir = QFileDialog.getExistingDirectory(None, 'Choose directory.', os.getenv('HOME'))
+        print(output_dir)
+        if not output_dir:
             self.output_label.setText('Output Path.')
         else:
-            self.output_label.setText(output_dir[0])
+            self.output_label.setText(output_dir)
 
     def ffmpeg_parse(self):
         print(self.input_label.text())
-
-        # FfmpegExtractFrames(self.inputLabel[0], self.outputLabel[0])
+        print(self.output_label.text())
 
     def __init__(self):
         super(Ui, self).__init__()
