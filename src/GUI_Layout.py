@@ -7,27 +7,43 @@ from PyQt5.QtWidgets import QFileDialog
 
 class Ui(QtWidgets.QMainWindow):
 
-    def inputFileDialogBox(self):
-        filename = QFileDialog.getOpenFileName(None, 'Open File', os.getenv('HOME'), 'Videos (*.mp4);; All Files (*)')
-        print(filename[0])
-        if not filename[0]:
-            self.inputLabel.setText('Input Path.')
+    def input_file_dialog_box(self):
+        input_file = QFileDialog.getOpenFileName(None, 'Open File', os.getenv('HOME'), 'Videos (*.mp4; *.mkv; *.webm; '
+                                                                                       '*gif);; All Files (*)')
+        if not input_file[0]:
+            self.input_label.setText('Input Path.')
         else:
-            self.inputLabel.setText(filename[0])
+            self.input_label.setText(input_file[0])
 
-    def outputFileDialogBox(self):
-        print(self.inputLabel.text())
+    def output_file_dialog_box(self):
+        output_dir = QFileDialog.getSaveFileName(None, 'Save File', os.getenv('HOME'), 'Videos (*.mp4; *.mkv; *.webm; '
+                                                                                       '*gif);; All Files (*)')
+        if not output_dir[0]:
+            self.output_label.setText('Output Path.')
+        else:
+            self.output_label.setText(output_dir[0])
+
+    def ffmpeg_parse(self):
+        print(self.input_label.text())
+
+        # FfmpegExtractFrames(self.inputLabel[0], self.outputLabel[0])
 
     def __init__(self):
         super(Ui, self).__init__()
         uic.loadUi('GUI_Layout.ui', self)
         self.setWindowTitle('DAIN-Vulkan-GUI')
-        self.inputFileButton = self.findChild(QtWidgets.QPushButton, 'inputFileButton')
-        self.outputFileButton = self.findChild(QtWidgets.QPushButton, 'outputFileButton')
-        self.inputLabel = self.findChild(QtWidgets.QLabel, 'inputFileLabel')
 
-        self.inputFileButton.clicked.connect(self.inputFileDialogBox)
-        self.outputFileButton.clicked.connect(self.outputFileDialogBox)
+        # Buttons and fields we can change
+        self.input_file_button = self.findChild(QtWidgets.QPushButton, 'inputFileButton')
+        self.output_file_button = self.findChild(QtWidgets.QPushButton, 'outputFileButton')
+        self.ffmpeg_button = self.findChild(QtWidgets.QPushButton, 'ffmpeg')
+        self.input_label = self.findChild(QtWidgets.QLabel, 'inputFileLabel')
+        self.output_label = self.findChild(QtWidgets.QLabel, 'outputFileLabel')
+
+        # This is the on click commands
+        self.input_file_button.clicked.connect(self.input_file_dialog_box)
+        self.output_file_button.clicked.connect(self.output_file_dialog_box)
+        self.ffmpeg_button.clicked.connect(self.ffmpeg_parse)
         self.show()
 
 
