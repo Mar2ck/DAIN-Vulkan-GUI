@@ -40,7 +40,7 @@ class Ui(QtWidgets.QMainWindow):
         self.input_label = self.findChild(QtWidgets.QLabel, 'inputFileLabel')
         self.output_label = self.findChild(QtWidgets.QLabel, 'outputFileLabel')
 
-        # This is the on click commands
+        # On click commands
         self.input_file_button.clicked.connect(self.input_file_dialog_box)
         self.output_file_button.clicked.connect(self.output_file_dialog_box)
         self.ffmpeg_button.clicked.connect(self.ffmpeg_parse)
