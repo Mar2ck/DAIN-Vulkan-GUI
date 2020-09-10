@@ -1,5 +1,4 @@
 import os
-import subprocess
 import sys
 
 from PyQt5 import QtWidgets, uic
@@ -24,10 +23,6 @@ class Ui(QtWidgets.QMainWindow):
         else:
             self.output_label.setText(output_dir)
 
-    def ffmpeg_parse(self):
-        print(self.input_label.text())
-        print(self.output_label.text())
-
     def __init__(self):
         super(Ui, self).__init__()
         uic.loadUi('GUI_Layout.ui', self)
@@ -43,7 +38,6 @@ class Ui(QtWidgets.QMainWindow):
         # On click commands
         self.input_file_button.clicked.connect(self.input_file_dialog_box)
         self.output_file_button.clicked.connect(self.output_file_dialog_box)
-        self.ffmpeg_button.clicked.connect(self.ffmpeg_parse)
         self.show()
 
 
