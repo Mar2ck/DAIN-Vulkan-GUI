@@ -1,0 +1,5 @@
+https://github.com/nihui/dain-ncnn-vulkan
+Buids from commit ebe50ce
+Windows2016
+Ubuntu18.04
+MacOS10.15
