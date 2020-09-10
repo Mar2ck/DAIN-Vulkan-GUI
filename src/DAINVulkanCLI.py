@@ -27,31 +27,31 @@ else:
 
 
 # DAIN Process Functions
-def DainVulkanFileModeCommand(Input0File, Input1File, OutputFile, TimeStep):
+def DainVulkanFileModeCommand(input0File, input1File, outputFile, timeStep):
     # Default to 0.5 if not specified
-    if TimeStep == None:
-        TimeStep = "0.5"
-    subprocess.run([dainVulkanExec, "-0", os.path.abspath(Input0File), "-1", os.path.abspath(Input1File), "-o",
-                    os.path.abspath(OutputFile), "-s", TimeStep, "-t", dainTileSize, "-g", dainGpuId, "-j",
+    if timeStep == None:
+        timeStep = "0.5"
+    subprocess.run([dainVulkanExec, "-0", os.path.abspath(input0File), "-1", os.path.abspath(input1File), "-o",
+                    os.path.abspath(outputFile), "-s", timeStep, "-t", dainTileSize, "-g", dainGpuId, "-j",
                     dainThreads], cwd=dainNcnnVulkanBinaryLocation)
 
 
-def DainVulkanFolderModeCommand(InputFolder, OutputFolder, TargetFrames):
-    command = [dainVulkanExec, "-i", os.path.abspath(InputFolder), "-o", os.path.abspath(OutputFolder), "-n",
-               TargetFrames, "-t", dainTileSize, "-g", dainGpuId, "-j", dainThreads]
+def DainVulkanFolderModeCommand(inputFolder, outputFolder, targetFrames):
+    command = [dainVulkanExec, "-i", os.path.abspath(inputFolder), "-o", os.path.abspath(outputFolder), "-n",
+               targetFrames, "-t", dainTileSize, "-g", dainGpuId, "-j", dainThreads]
     subprocess.run(command, cwd=dainNcnnVulkanBinaryLocation)
 
 
 # FFMPEG Process Functions
-def FfmpegExtractFrames(InputFile, OutputFolder):  # "Step 1"
+def FfmpegExtractFrames(inputFile, outputFolder):  # "Step 1"
     # ffmpeg -i "$i" %06d.png
-    command = ["ffmpeg", "-i", InputFile, os.path.join(OutputFolder, "%10d.png")]
+    command = ["ffmpeg", "-i", inputFile, os.path.join(outputFolder, "%10d.png")]
     subprocess.run(command)
 
 
-def FfmpegEncodeFrames(InputFolder, OutputFile, Framerate):
+def FfmpegEncodeFrames(inputFolder, outputFile, Framerate):
     # ffmpeg -framerate 48 -i interpolated_frames/%06d.png output.mp4
-    command = ["ffmpeg", "-framerate", Framerate, "-i", os.path.join(InputFolder, "%06d.png"), OutputFile]
+    command = ["ffmpeg", "-framerate", Framerate, "-i", os.path.join(inputFolder, "%06d.png"), outputFile]
     subprocess.run(command)
 
 
@@ -65,7 +65,7 @@ if __name__ == "__main__":
                         default=(os.path.join(tempfile.gettempdir(), "DAIN-Vulkan-GUI")))
     ## Interpolation options
     parser.add_argument("-s", "--frame-multiplier", help="Frame multiplier 2x,3x,etc (default=2)", action="store",
-                        default="2")
+                        type="float", default=2)
     parser.add_argument("-fps", "--target-fps", help="[Unimplemented]Calculates multiplier based on target framerate",
                         action="store")
     ## Dain-ncnn-vulkan pass-through options
@@ -83,12 +83,6 @@ if __name__ == "__main__":
     parser.add_argument("--input-fps", help="Manually specify framerate of input video", action="store")
     parser.add_argument("--verbose", help="Print additional info to the commandline", action="store_true")
     args = parser.parse_args()
-
-    try:
-        MultiplierFloat = float(args.frame_multiplier)
-    except:
-        print("Multiplier not a valid number")
-        exit(1)
 
     # Override global variables with arguments
     if args.gpu_id is not None:
@@ -133,14 +127,14 @@ if __name__ == "__main__":
         print("Extracting frames to original_frames")
         FfmpegExtractFrames(inputFile, dainOriginalFramesFolder)
 
-    print("Interpolation Multiplier:", MultiplierFloat)
+    print("Interpolation Multiplier:", args.frame_multiplier)
     ## Analyse original frames
     dainOriginalFramesArray = sorted(
         [f for f in os.listdir(dainOriginalFramesFolder) if os.path.isfile(os.path.join(dainOriginalFramesFolder, f))])
     dainOriginalFramesCount = len(dainOriginalFramesArray)
     print("Original frame count:", dainOriginalFramesCount)
     ## Calculate interpolated frames
-    dainInterpolatedFramesCount = dainOriginalFramesCount * MultiplierFloat
+    dainInterpolatedFramesCount = dainOriginalFramesCount * args.frame_multiplier
     print("Interpolated frame count", dainInterpolatedFramesCount)
 
     if (stepsSelection is None) or ("2" in stepsSelection):
