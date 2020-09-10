@@ -25,35 +25,34 @@ else:
     dainNcnnVulkanBinaryLocation = dainNcnnVulkanLinuxBinaryLocation
     dainVulkanExec = os.path.join(".", "dain-ncnn-vulkan")
 
-
 # DAIN Process Functions
 def DainVulkanFileModeCommand(input0File, input1File, outputFile, timeStep):
     # Default to 0.5 if not specified
     if timeStep == None:
         timeStep = "0.5"
-    subprocess.run([dainVulkanExec, "-0", os.path.abspath(input0File), "-1", os.path.abspath(input1File), "-o",
-                    os.path.abspath(outputFile), "-s", timeStep, "-t", dainTileSize, "-g", dainGpuId, "-j",
-                    dainThreads], cwd=dainNcnnVulkanBinaryLocation)
-
+    pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
+    command = [dainVulkanExec, "-0", os.path.abspath(input0File), "-1", os.path.abspath(input1File), "-o",
+               os.path.abspath(outputFile), "-s", timeStep, "-t", dainTileSize, "-g", dainGpuId, "-j", dainThreads]
+    subprocess.run(command, cwd=dainNcnnVulkanBinaryLocation)
 
 def DainVulkanFolderModeCommand(inputFolder, outputFolder, targetFrames):
+    pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True)  # Create outputFolder
     command = [dainVulkanExec, "-i", os.path.abspath(inputFolder), "-o", os.path.abspath(outputFolder), "-n",
                targetFrames, "-t", dainTileSize, "-g", dainGpuId, "-j", dainThreads]
     subprocess.run(command, cwd=dainNcnnVulkanBinaryLocation)
 
-
 # FFMPEG Process Functions
 def FfmpegExtractFrames(inputFile, outputFolder):  # "Step 1"
     # ffmpeg -i "$i" %06d.png
-    command = ["ffmpeg", "-i", inputFile, os.path.join(outputFolder, "%10d.png")]
+    pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True) # Create outputFolder
+    command = ["ffmpeg", "-i", inputFile, os.path.join(outputFolder, "%06d.png")]
     subprocess.run(command)
-
 
 def FfmpegEncodeFrames(inputFolder, outputFile, Framerate):
     # ffmpeg -framerate 48 -i interpolated_frames/%06d.png output.mp4
+    pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True) # Create parent folder of outputFile
     command = ["ffmpeg", "-framerate", Framerate, "-i", os.path.join(inputFolder, "%06d.png"), outputFile]
     subprocess.run(command)
-
 
 if __name__ == "__main__":
     # Console arguments
@@ -142,6 +141,6 @@ if __name__ == "__main__":
         DainVulkanFolderModeCommand(dainOriginalFramesFolder, dainInterpolatedFramesFolder,
                                     str(dainInterpolatedFramesCount))
 
-    if (stepsSelection is None) or ("1" in stepsSelection):
+    if (stepsSelection is None) or ("3" in stepsSelection):
         print("Extracting frames to original_frames")
-        FfmpegEncodeFrames(dainInterpolatedFramesFolder, dainOutputVideosFolder, "48")
+        FfmpegEncodeFrames(dainInterpolatedFramesFolder, os.path.join(dainOutputVideosFolder, "output.mp4"), "48")
