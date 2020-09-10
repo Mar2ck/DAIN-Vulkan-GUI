@@ -11,9 +11,9 @@ programLocation = os.path.dirname(os.path.abspath(__file__))
 
 # Default Global Variables
 dainNcnnVulkanWindowsBinaryLocation = os.path.abspath(
-    os.path.join(programLocation, "bin", "dain-ncnn-vulkan-windows-2019"))
+    os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "windows"))
 dainNcnnVulkanLinuxBinaryLocation = os.path.abspath(
-    os.path.join(programLocation, "bin", "dain-ncnn-vulkan-ubuntu-20.04"))
+    os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "ubuntu"))
 dainGpuId = "auto"
 dainThreads = "1:2:2"
 dainTileSize = "256"
