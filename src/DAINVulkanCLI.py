@@ -61,11 +61,11 @@ if __name__ == "__main__":
     ## Path Arguments
     parser.add_argument("-i", "--input-file", help="Path to input video", action="store", required=True)
     parser.add_argument("-o", "--output-file", help="Path to output final video to", action="store")
-    parser.add_argument("--output-folder", help="Folder to output work to", action="store",
+    parser.add_argument("-O", "--output-folder", help="Folder to output work to", action="store",
                         default=(os.path.join(tempfile.gettempdir(), "DAIN-Vulkan-GUI")))
     ## Interpolation options
     parser.add_argument("-s", "--frame-multiplier", help="Frame multiplier 2x,3x,etc (default=2)", action="store",
-                        type="float", default=2)
+                        type=float, default=2)
     parser.add_argument("-fps", "--target-fps", help="[Unimplemented]Calculates multiplier based on target framerate",
                         action="store")
     ## Dain-ncnn-vulkan pass-through options
