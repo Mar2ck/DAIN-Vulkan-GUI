@@ -69,13 +69,14 @@ def CainVulkanFolderModeCommand(inputFolder, outputFolder): # Output frames are 
 def FfmpegExtractFrames(inputFile, outputFolder):  # "Step 1"
     # ffmpeg -i "$i" %06d.png
     pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True) # Create outputFolder
-    command = ["ffmpeg", "-i", inputFile, os.path.join(outputFolder, "%06d.png")]
+    command = ["ffmpeg", "-i", inputFile, "-loglevel", "error", os.path.join(outputFolder, "%06d.png")]
     subprocess.run(command)
 
 def FfmpegEncodeFrames(inputFolder, outputFile, Framerate):
     # ffmpeg -framerate 48 -i interpolated_frames/%06d.png output.mp4
     pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True) # Create parent folder of outputFile
-    command = ["ffmpeg", "-framerate", Framerate, "-i", os.path.join(inputFolder, "%06d.png"), outputFile]
+    command = ["ffmpeg", "-framerate", Framerate, "-i", os.path.join(inputFolder, "%06d.png"), "-y",
+               "-loglevel", "error", outputFile]
     subprocess.run(command)
 
 #FFprobe Process Functions
@@ -150,47 +151,49 @@ if __name__ == "__main__":
     outputFolder = os.path.abspath(args.output_folder)
     print("Input file:", inputFile)
 
+    inputFileProperties = FfprobeCollectVideoInfo(inputFile)
+    if args.input_fps is not None:
+        inputFileFps = args.input_fps
+    else:
+        fracNum, fracDenom = inputFileProperties["fpsAverage"].split("/")
+        inputFileFps = int(fracNum) / int(fracDenom)
+
     # Setup working folder
-    dainWorkingFolder = os.path.join(outputFolder, pathlib.Path(inputFile).stem)
-    pathlib.Path(dainWorkingFolder).mkdir(parents=True, exist_ok=True)
-    print("Working Directory:", dainWorkingFolder)
+    folderBase = os.path.join(outputFolder, pathlib.Path(inputFile).stem)
+    print("Working Directory:", folderBase)
     ## Setup original_frames folder
-    dainOriginalFramesFolder = os.path.join(dainWorkingFolder, "original_frames")
-    pathlib.Path(dainOriginalFramesFolder).mkdir(parents=True, exist_ok=True)
+    folderOriginalFrames = os.path.join(folderBase, "original_frames")
     ## Setup interpolated_frames folder
-    dainInterpolatedFramesFolder = os.path.join(dainWorkingFolder, "interpolated_frames")
-    pathlib.Path(dainInterpolatedFramesFolder).mkdir(parents=True, exist_ok=True)
+    folderInterpolatedFrames = os.path.join(folderBase, "interpolated_frames")
     ## Setup output_videos folder
-    dainOutputVideosFolder = os.path.join(dainWorkingFolder, "output_videos")
-    pathlib.Path(dainOutputVideosFolder).mkdir(parents=True, exist_ok=True)
+    folderOutputVideos = os.path.join(folderBase, "output_videos")
 
     if (stepsSelection is None) or ("1" in stepsSelection):
-        print("Extracting frames to original_frames")
-        FfmpegExtractFrames(inputFile, dainOriginalFramesFolder)
+        print("Step 1: Extracting frames to original_frames")
+        FfmpegExtractFrames(inputFile, folderOriginalFrames)
 
-    print("Interpolation Multiplier:", args.frame_multiplier)
     ## Analyse original frames
-    dainOriginalFramesArray = sorted(
-        [f for f in os.listdir(dainOriginalFramesFolder) if os.path.isfile(os.path.join(dainOriginalFramesFolder, f))])
-    dainOriginalFramesCount = len(dainOriginalFramesArray)
-    print("Original frame count:", dainOriginalFramesCount)
+    folderOriginalFramesArray = sorted(os.listdir(folderOriginalFrames))
+    folderOriginalFramesCount = len(folderOriginalFramesArray)
+    print("Original frame count:", folderOriginalFramesCount)
     ## Calculate interpolated frames
-    dainInterpolatedFramesCount = dainOriginalFramesCount * args.frame_multiplier
-    print("Interpolated frame count", dainInterpolatedFramesCount)
+    folderInterpolatedFramesCount = folderOriginalFramesCount * args.frame_multiplier
+    print("Interpolated frame count", folderInterpolatedFramesCount)
 
     if (stepsSelection is None) or ("2" in stepsSelection):
-        print("Processing frames to interpolated_frames")
+        print("Step 2: Processing frames to interpolated_frames using", args.interpolator)
         if args.interpolator == "dain-ncnn":
-            DainVulkanFolderModeCommand(dainOriginalFramesFolder,
-                                        dainInterpolatedFramesFolder,
-                                        str(dainInterpolatedFramesCount))
+            print("Interpolation Multiplier:", args.frame_multiplier)
+            DainVulkanFolderModeCommand(folderOriginalFrames,
+                                        folderInterpolatedFrames,
+                                        str(folderInterpolatedFramesCount))
         elif args.interpolator == "cain-ncnn":
-            CainVulkanFolderModeCommand(dainOriginalFramesFolder,
-                                    dainInterpolatedFramesFolder)
+            CainVulkanFolderModeCommand(folderOriginalFrames,
+                                        folderInterpolatedFrames)
         else:
             print("Invalid interpolator option")
             exit(1)
 
     if (stepsSelection is None) or ("3" in stepsSelection):
-        print("Extracting frames to original_frames")
-        FfmpegEncodeFrames(dainInterpolatedFramesFolder, os.path.join(dainOutputVideosFolder, "output.mp4"), "48")
+        print("Step 3: Extracting frames to output_videos")
+        FfmpegEncodeFrames(folderInterpolatedFrames, os.path.join(folderOutputVideos, "output.mp4"), str(inputFileFps * args.frame_multiplier))
