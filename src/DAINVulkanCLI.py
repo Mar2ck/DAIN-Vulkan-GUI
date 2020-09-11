@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
 import pathlib
 import tempfile
 import subprocess
@@ -41,7 +42,7 @@ def DainVulkanFolderModeCommand(inputFolder, outputFolder, targetFrames):
                targetFrames, "-t", dainTileSize, "-g", dainGpuId, "-j", dainThreads]
     subprocess.run(command, cwd=dainNcnnVulkanBinaryLocation)
 
-# FFMPEG Process Functions
+# FFmpeg Process Functions
 def FfmpegExtractFrames(inputFile, outputFolder):  # "Step 1"
     # ffmpeg -i "$i" %06d.png
     pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True) # Create outputFolder
@@ -54,6 +55,24 @@ def FfmpegEncodeFrames(inputFolder, outputFile, Framerate):
     command = ["ffmpeg", "-framerate", Framerate, "-i", os.path.join(inputFolder, "%06d.png"), outputFile]
     subprocess.run(command)
 
+#FFprobe Process Functions
+def FfprobeCollectVideoInfo(inputFile):
+    # ffprobe -show_streams -print_format json -loglevel quiet input.mp4
+    # Some videos don't return "duration" such as webm, apng
+    command = ["ffprobe", "-show_streams", "-print_format", "json", "-loglevel", "quiet", inputFile]
+    output = subprocess.check_output(command, text=True)
+    parsedOutput = json.loads(output)["streams"][0]
+    return({
+        "width": parsedOutput["width"],
+        "height": parsedOutput["height"],
+        "fps": parsedOutput["r_frame_rate"],
+        "fpsAverage": parsedOutput["avg_frame_rate"]
+    })
+
+def FfprobeCollectFrameInfo(inputFile): # Will be needed for a timestamp mode
+    # ffprobe -show_frames -print_format json -loglevel quiet input.mp4
+    pass
+
 if __name__ == "__main__":
     # Console arguments
     parser = argparse.ArgumentParser()
@@ -65,7 +84,7 @@ if __name__ == "__main__":
     ## Interpolation options
     parser.add_argument("-s", "--frame-multiplier", help="Frame multiplier 2x,3x,etc (default=2)", action="store",
                         type=float, default=2)
-    parser.add_argument("-fps", "--target-fps", help="[Unimplemented]Calculates multiplier based on target framerate",
+    parser.add_argument("-fps", "--target-fps", help="[Unimplemented] Calculates multiplier based on target framerate",
                         action="store")
     ## Dain-ncnn-vulkan pass-through options
     parser.add_argument("-g", "--gpu-id", help="GPU to use (default=auto) can be 0,1,2 for multi-gpu", action="store")
