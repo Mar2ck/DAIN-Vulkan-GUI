@@ -10,23 +10,33 @@ import os
 
 programLocation = os.path.dirname(os.path.abspath(__file__))
 
-# Default Global Variables
+# Dain-ncnn Location
 dainNcnnVulkanWindowsBinaryLocation = os.path.abspath(
     os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "windows"))
 dainNcnnVulkanLinuxBinaryLocation = os.path.abspath(
     os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "ubuntu"))
+# Cain-ncnn Location
+cainNcnnVulkanWindowsBinaryLocation = os.path.abspath(
+    os.path.join(programLocation, "dependencies", "cain-ncnn-vulkan", "windows"))
+cainNcnnVulkanLinuxBinaryLocation = os.path.abspath(
+    os.path.join(programLocation, "dependencies", "cain-ncnn-vulkan", "ubuntu"))
+# Interpolation Defaults
 dainGpuId = "auto"
-dainThreads = "1:2:2"
+dainThreads = "1:1:1"
 dainTileSize = "256"
 
 if sys.platform == "win32":
     dainNcnnVulkanBinaryLocation = dainNcnnVulkanWindowsBinaryLocation
     dainVulkanExec = os.path.join(".", "dain-ncnn-vulkan.exe")
+    cainNcnnVulkanBinaryLocation = cainNcnnVulkanWindowsBinaryLocation
+    cainVulkanExec = os.path.join(".", "cain-ncnn-vulkan.exe")
 else:
     dainNcnnVulkanBinaryLocation = dainNcnnVulkanLinuxBinaryLocation
     dainVulkanExec = os.path.join(".", "dain-ncnn-vulkan")
+    cainNcnnVulkanBinaryLocation = cainNcnnVulkanLinuxBinaryLocation
+    cainVulkanExec = os.path.join(".", "cain-ncnn-vulkan")
 
-# DAIN Process Functions
+# Dain-ncnn Interpolation Functions
 def DainVulkanFileModeCommand(input0File, input1File, outputFile, timeStep):
     # Default to 0.5 if not specified
     if timeStep == None:
@@ -41,6 +51,19 @@ def DainVulkanFolderModeCommand(inputFolder, outputFolder, targetFrames):
     command = [dainVulkanExec, "-i", os.path.abspath(inputFolder), "-o", os.path.abspath(outputFolder), "-n",
                targetFrames, "-t", dainTileSize, "-g", dainGpuId, "-j", dainThreads]
     subprocess.run(command, cwd=dainNcnnVulkanBinaryLocation)
+
+# Cain-ncnn Interpolation Functions
+def CainVulkanFileModeCommand(input0File, input1File, outputFile): # Doesn't support timestep
+    pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
+    command = [cainVulkanExec, "-0", os.path.abspath(input0File), "-1", os.path.abspath(input1File), "-o",
+               os.path.abspath(outputFile), "-t", dainTileSize, "-g", dainGpuId, "-j", dainThreads]
+    subprocess.run(command, cwd=cainNcnnVulkanBinaryLocation)
+
+def CainVulkanFolderModeCommand(inputFolder, outputFolder): # Output frames are always double of input
+    pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True)  # Create outputFolder
+    command = [cainVulkanExec, "-i", os.path.abspath(inputFolder), "-o", os.path.abspath(outputFolder),
+               "-t", dainTileSize, "-g", dainGpuId, "-j", dainThreads]
+    subprocess.run(command, cwd=cainNcnnVulkanBinaryLocation)
 
 # FFmpeg Process Functions
 def FfmpegExtractFrames(inputFile, outputFolder):  # "Step 1"
@@ -86,7 +109,9 @@ if __name__ == "__main__":
                         type=float, default=2)
     parser.add_argument("-fps", "--target-fps", help="[Unimplemented] Calculates multiplier based on target framerate",
                         action="store")
-    ## Dain-ncnn-vulkan pass-through options
+    parser.add_argument("--interpolator", help="Pick interpolator: dain-ncnn, cain-ncnn (default=dain-ncnn)",
+                        action="store", default="dain-ncnn")
+    ## Dain-ncnn/Cain-ncnn pass-through options
     parser.add_argument("-g", "--gpu-id", help="GPU to use (default=auto) can be 0,1,2 for multi-gpu", action="store")
     parser.add_argument("-t", "--tilesize",
                         help="Tile size (>=128, default=256) must be multiple of 32 ,can be 256,256,128 for multi-gpu",
@@ -120,8 +145,6 @@ if __name__ == "__main__":
     print("Tilesize:", dainTileSize)
     if args.verbose is True:
         print("Platform:", sys.platform)
-        if os.path.exists(dainNcnnVulkanBinaryLocation):
-            print("Using dain-ncnn-vulkan at", dainNcnnVulkanBinaryLocation)
 
     inputFile = os.path.abspath(args.input_file)
     outputFolder = os.path.abspath(args.output_folder)
@@ -157,8 +180,16 @@ if __name__ == "__main__":
 
     if (stepsSelection is None) or ("2" in stepsSelection):
         print("Processing frames to interpolated_frames")
-        DainVulkanFolderModeCommand(dainOriginalFramesFolder, dainInterpolatedFramesFolder,
-                                    str(dainInterpolatedFramesCount))
+        if args.interpolator == "dain-ncnn":
+            DainVulkanFolderModeCommand(dainOriginalFramesFolder,
+                                        dainInterpolatedFramesFolder,
+                                        str(dainInterpolatedFramesCount))
+        elif args.interpolator == "cain-ncnn":
+            CainVulkanFolderModeCommand(dainOriginalFramesFolder,
+                                    dainInterpolatedFramesFolder)
+        else:
+            print("Invalid interpolator option")
+            exit(1)
 
     if (stepsSelection is None) or ("3" in stepsSelection):
         print("Extracting frames to original_frames")
