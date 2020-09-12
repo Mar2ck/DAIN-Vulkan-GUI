@@ -1,65 +1,46 @@
-# -*- coding: utf-8 -*-
+import os
+import sys
 
-# Form implementation generated from reading ui file 'GUI_Layout.ui'
-#
-# Created by: PyQt5 UI code generator 5.14.1
-#
-# WARNING! All changes made in this file will be lost!
+from PyQt5 import QtWidgets, uic
+from PyQt5.QtWidgets import QFileDialog
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+class Ui(QtWidgets.QMainWindow):
+
+    def input_file_dialog_box(self):
+        input_file = QFileDialog.getOpenFileName(None, 'Open File', os.getenv('HOME'), 'Videos (*.mp4; *.mkv; *.webm; '
+                                                                                       '*gif);; All Files (*)')
+        if not input_file[0]:
+            self.input_label.setText('Input Path.')
+        else:
+            self.input_label.setText(input_file[0])
+
+    def output_file_dialog_box(self):
+        output_dir = QFileDialog.getExistingDirectory(None, 'Choose directory.', os.getenv('HOME'))
+        print(output_dir)
+        if not output_dir:
+            self.output_label.setText('Output Path.')
+        else:
+            self.output_label.setText(output_dir)
+
+    def __init__(self):
+        super(Ui, self).__init__()
+        uic.loadUi('GUI_Layout.ui', self)
+        self.setWindowTitle('DAIN-Vulkan-GUI')
+
+        # Buttons and fields we can change
+        self.input_file_button = self.findChild(QtWidgets.QPushButton, 'inputFileButton')
+        self.output_file_button = self.findChild(QtWidgets.QPushButton, 'outputFileButton')
+        self.ffmpeg_button = self.findChild(QtWidgets.QPushButton, 'ffmpeg')
+        self.input_label = self.findChild(QtWidgets.QLabel, 'inputFileLabel')
+        self.output_label = self.findChild(QtWidgets.QLabel, 'outputFileLabel')
+
+        # On click commands
+        self.input_file_button.clicked.connect(self.input_file_dialog_box)
+        self.output_file_button.clicked.connect(self.output_file_dialog_box)
+        self.show()
 
 
-class Ui_MainWindow(object):
-    def setupUi(self, MainWindow):
-        MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(600, 600)
-        self.centralwidget = QtWidgets.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
-        self.gridLayout.setObjectName("gridLayout")
-        self.verticalLayout_3 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_3.setObjectName("verticalLayout_3")
-        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setObjectName("pushButton")
-        self.horizontalLayout_6.addWidget(self.pushButton)
-        self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setObjectName("label")
-        self.horizontalLayout_6.addWidget(self.label)
-        self.verticalLayout_3.addLayout(self.horizontalLayout_6)
-        self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
-        self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.horizontalLayout_7.addWidget(self.pushButton_2)
-        self.label_3 = QtWidgets.QLabel(self.centralwidget)
-        self.label_3.setObjectName("label_3")
-        self.horizontalLayout_7.addWidget(self.label_3)
-        self.verticalLayout_3.addLayout(self.horizontalLayout_7)
-        self.label_2 = QtWidgets.QLabel(self.centralwidget)
-        self.label_2.setObjectName("label_2")
-        self.verticalLayout_3.addWidget(self.label_2)
-        self.gridLayout.addLayout(self.verticalLayout_3, 0, 0, 1, 1)
-        MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 600, 27))
-        self.menubar.setObjectName("menubar")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
-
-        self.retranslateUi(MainWindow)
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.pushButton.setText(_translate("MainWindow", "Input FIle"))
-        self.label.setText(_translate("MainWindow", "Input Path"))
-        self.pushButton_2.setText(_translate("MainWindow", "Output File"))
-        self.label_3.setText(_translate("MainWindow", "Output Path"))
-        self.label_2.setText(_translate("MainWindow", "TextLabel"))
-#
+app = QtWidgets.QApplication(sys.argv)
+window = Ui()
+app.exec_()
