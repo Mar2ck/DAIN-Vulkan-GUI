@@ -11,16 +11,12 @@ import os
 programLocation = os.path.dirname(os.path.abspath(__file__))
 
 # Dain-ncnn Location
-dainNcnnVulkanWindowsBinaryLocation = os.path.join(
-    programLocation, "dependencies", "dain-ncnn-vulkan", "windows")
-dainNcnnVulkanLinuxBinaryLocation = os.path.join(
-    programLocation, "dependencies", "dain-ncnn-vulkan", "ubuntu")
+dainVulkanBinaryLocation = os.path.join(
+    programLocation, "dependencies", "dain-ncnn-vulkan")
 
 # Cain-ncnn Location
-cainNcnnVulkanWindowsBinaryLocation = os.path.join(
-    programLocation, "dependencies", "cain-ncnn-vulkan", "windows")
-cainNcnnVulkanLinuxBinaryLocation = os.path.join(
-    programLocation, "dependencies", "cain-ncnn-vulkan", "ubuntu")
+cainVulkanBinaryLocation = os.path.join(
+    programLocation, "dependencies", "cain-ncnn-vulkan")
 
 # Interpolation Defaults
 dainGpuId = "auto"
@@ -29,18 +25,12 @@ dainTileSize = "256"
 
 if sys.platform == "win32":
     # Windows
-    dainNcnnVulkanBinaryLocation = dainNcnnVulkanWindowsBinaryLocation
-    dainVulkanExec = os.path.join(dainNcnnVulkanWindowsBinaryLocation, "dain-ncnn-vulkan.exe")
-
-    cainNcnnVulkanBinaryLocation = cainNcnnVulkanWindowsBinaryLocation
-    cainVulkanExec = os.path.join(cainNcnnVulkanWindowsBinaryLocation, "cain-ncnn-vulkan.exe")
+    dainVulkanExec = os.path.join(dainVulkanBinaryLocation, "dain-ncnn-vulkan.exe")
+    cainVulkanExec = os.path.join(cainVulkanBinaryLocation, "cain-ncnn-vulkan.exe")
 else:
     # Linux
-    dainNcnnVulkanBinaryLocation = dainNcnnVulkanLinuxBinaryLocation
-    dainVulkanExec = os.path.join(dainNcnnVulkanLinuxBinaryLocation, "dain-ncnn-vulkan")
-
-    cainNcnnVulkanBinaryLocation = cainNcnnVulkanLinuxBinaryLocation
-    cainVulkanExec = os.path.join(cainNcnnVulkanLinuxBinaryLocation, "cain-ncnn-vulkan")
+    dainVulkanExec = os.path.join(dainVulkanBinaryLocation, "dain-ncnn-vulkan-ubuntu")
+    cainVulkanExec = os.path.join(cainVulkanBinaryLocation, "cain-ncnn-vulkan-ubuntu")
 
 # Dain-ncnn Interpolation Functions
 def DainVulkanFileModeCommand(input0File, input1File, outputFile, timeStep):
@@ -50,26 +40,26 @@ def DainVulkanFileModeCommand(input0File, input1File, outputFile, timeStep):
     pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
     command = [dainVulkanExec, "-0", os.path.abspath(input0File), "-1", os.path.abspath(input1File), "-o",
                os.path.abspath(outputFile), "-s", timeStep, "-t", dainTileSize, "-g", dainGpuId, "-j", dainThreads]
-    subprocess.run(command, cwd=dainNcnnVulkanBinaryLocation)
+    subprocess.run(command, cwd=dainVulkanBinaryLocation)
 
 def DainVulkanFolderModeCommand(inputFolder, outputFolder, targetFrames):
     pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True)  # Create outputFolder
     command = [dainVulkanExec, "-i", os.path.abspath(inputFolder), "-o", os.path.abspath(outputFolder), "-n",
                targetFrames, "-t", dainTileSize, "-g", dainGpuId, "-j", dainThreads]
-    subprocess.run(command, cwd=dainNcnnVulkanBinaryLocation)
+    subprocess.run(command, cwd=dainVulkanBinaryLocation)
 
 # Cain-ncnn Interpolation Functions
 def CainVulkanFileModeCommand(input0File, input1File, outputFile): # Doesn't support timestep
     pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
     command = [cainVulkanExec, "-0", os.path.abspath(input0File), "-1", os.path.abspath(input1File), "-o",
                os.path.abspath(outputFile), "-t", dainTileSize, "-g", dainGpuId, "-j", dainThreads]
-    subprocess.run(command, cwd=cainNcnnVulkanBinaryLocation)
+    subprocess.run(command, cwd=cainVulkanBinaryLocation)
 
 def CainVulkanFolderModeCommand(inputFolder, outputFolder): # Output frames are always double of input
     pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True)  # Create outputFolder
     command = [cainVulkanExec, "-i", os.path.abspath(inputFolder), "-o", os.path.abspath(outputFolder),
                "-t", dainTileSize, "-g", dainGpuId, "-j", dainThreads]
-    subprocess.run(command, cwd=cainNcnnVulkanBinaryLocation)
+    subprocess.run(command, cwd=cainVulkanBinaryLocation)
 
 # FFmpeg Process Functions
 def FfmpegExtractFrames(inputFile, outputFolder):  # "Step 1"
