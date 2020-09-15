@@ -11,30 +11,36 @@ import os
 programLocation = os.path.dirname(os.path.abspath(__file__))
 
 # Dain-ncnn Location
-dainNcnnVulkanWindowsBinaryLocation = os.path.abspath(
-    os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "windows"))
-dainNcnnVulkanLinuxBinaryLocation = os.path.abspath(
-    os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "ubuntu"))
+dainNcnnVulkanWindowsBinaryLocation = os.path.join(
+    programLocation, "dependencies", "dain-ncnn-vulkan", "windows")
+dainNcnnVulkanLinuxBinaryLocation = os.path.join(
+    programLocation, "dependencies", "dain-ncnn-vulkan", "ubuntu")
+
 # Cain-ncnn Location
-cainNcnnVulkanWindowsBinaryLocation = os.path.abspath(
-    os.path.join(programLocation, "dependencies", "cain-ncnn-vulkan", "windows"))
-cainNcnnVulkanLinuxBinaryLocation = os.path.abspath(
-    os.path.join(programLocation, "dependencies", "cain-ncnn-vulkan", "ubuntu"))
+cainNcnnVulkanWindowsBinaryLocation = os.path.join(
+    programLocation, "dependencies", "cain-ncnn-vulkan", "windows")
+cainNcnnVulkanLinuxBinaryLocation = os.path.join(
+    programLocation, "dependencies", "cain-ncnn-vulkan", "ubuntu")
+
 # Interpolation Defaults
 dainGpuId = "auto"
 dainThreads = "1:1:1"
 dainTileSize = "256"
 
 if sys.platform == "win32":
+    # Windows
     dainNcnnVulkanBinaryLocation = dainNcnnVulkanWindowsBinaryLocation
-    dainVulkanExec = os.path.join(".", "dain-ncnn-vulkan.exe")
+    dainVulkanExec = os.path.join(dainNcnnVulkanWindowsBinaryLocation, "dain-ncnn-vulkan.exe")
+
     cainNcnnVulkanBinaryLocation = cainNcnnVulkanWindowsBinaryLocation
-    cainVulkanExec = os.path.join(".", "cain-ncnn-vulkan.exe")
+    cainVulkanExec = os.path.join(cainNcnnVulkanWindowsBinaryLocation, "cain-ncnn-vulkan.exe")
 else:
+    # Linux
     dainNcnnVulkanBinaryLocation = dainNcnnVulkanLinuxBinaryLocation
-    dainVulkanExec = os.path.join(".", "dain-ncnn-vulkan")
+    dainVulkanExec = os.path.join(dainNcnnVulkanLinuxBinaryLocation, "dain-ncnn-vulkan")
+
     cainNcnnVulkanBinaryLocation = cainNcnnVulkanLinuxBinaryLocation
-    cainVulkanExec = os.path.join(".", "cain-ncnn-vulkan")
+    cainVulkanExec = os.path.join(cainNcnnVulkanLinuxBinaryLocation, "cain-ncnn-vulkan")
 
 # Dain-ncnn Interpolation Functions
 def DainVulkanFileModeCommand(input0File, input1File, outputFile, timeStep):
@@ -84,7 +90,7 @@ def FfprobeCollectVideoInfo(inputFile):
     # ffprobe -show_streams -print_format json -loglevel quiet input.mp4
     # Some videos don't return "duration" such as webm, apng
     command = ["ffprobe", "-show_streams", "-print_format", "json", "-loglevel", "quiet", inputFile]
-    output = subprocess.check_output(command, text=True)
+    output = subprocess.check_output(command, universal_newlines=True)
     parsedOutput = json.loads(output)["streams"][0]
     return({
         "width": parsedOutput["width"],
