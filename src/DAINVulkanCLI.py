@@ -75,7 +75,7 @@ def FfmpegExtractFrames(inputFile, outputFolder):  # "Step 1"
 def FfmpegEncodeFrames(inputFolder, outputFile, Framerate):
     # ffmpeg -framerate 48 -i interpolated_frames/%06d.png output.mp4
     pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True) # Create parent folder of outputFile
-    command = ["ffmpeg", "-framerate", Framerate, "-i", os.path.join(inputFolder, "%06d.png"), "-y",
+    command = ["ffmpeg", "-framerate", Framerate, "-i", os.path.join(inputFolder, "%06d.png"), "-crf", "18", "-y",
                "-loglevel", "error", outputFile]
     subprocess.run(command)
 
