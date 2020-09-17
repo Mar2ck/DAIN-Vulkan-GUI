@@ -81,13 +81,17 @@ def FfprobeCollectVideoInfo(inputFile):
     # Some videos don't return "duration" such as webm, apng
     command = ["ffprobe", "-show_streams", "-print_format", "json", "-loglevel", "quiet", inputFile]
     output = subprocess.check_output(command, universal_newlines=True)
-    parsedOutput = json.loads(output)["streams"][0]
-    return({
-        "width": parsedOutput["width"],
-        "height": parsedOutput["height"],
-        "fps": parsedOutput["r_frame_rate"],
-        "fpsAverage": parsedOutput["avg_frame_rate"]
-    })
+    parsedOutput = json.loads(output)["streams"]
+    for streamData in parsedOutput:
+        if streamData["codec_type"] == "video":
+            return({
+                "width": streamData["width"],
+                "height": streamData["height"],
+                "fps": streamData["r_frame_rate"],
+                "fpsAverage": streamData["avg_frame_rate"]
+            })
+    print("FFprobe error: Video stream not found")
+    exit(1)
 
 def FfprobeCollectFrameInfo(inputFile): # Will be needed for a timestamp mode
     # ffprobe -show_frames -print_format json -loglevel quiet input.mp4
@@ -147,7 +151,9 @@ if __name__ == "__main__":
     outputFolder = os.path.abspath(args.output_folder)
     print("Input file:", inputFile)
 
+    print("FFprobe: Scanning video metadata...")
     inputFileProperties = FfprobeCollectVideoInfo(inputFile)
+    print(inputFileProperties)
     if args.input_fps is not None:
         inputFileFps = args.input_fps
     else:
