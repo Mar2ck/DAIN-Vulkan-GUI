@@ -77,25 +77,28 @@ def FfmpegEncodeFrames(inputFolder, outputFile, Framerate):
 
 #FFprobe Process Functions
 def FfprobeCollectVideoInfo(inputFile):
-    # ffprobe -show_streams -print_format json -loglevel quiet input.mp4
-    # Some videos don't return "duration" such as webm, apng
-    command = ["ffprobe", "-show_streams", "-print_format", "json", "-loglevel", "quiet", inputFile]
+    # ffprobe -show_streams -select_streams v:0 -print_format json -loglevel quiet input.mp4
+    # Some videos don't return "duration" such as apng
+    command = ["ffprobe", "-show_streams", "-select_streams", "v:0", "-print_format", "json", "-loglevel", "quiet",
+               inputFile]
     output = subprocess.check_output(command, universal_newlines=True)
-    parsedOutput = json.loads(output)["streams"]
-    for streamData in parsedOutput:
-        if streamData["codec_type"] == "video":
-            return({
-                "width": streamData["width"],
-                "height": streamData["height"],
-                "fps": streamData["r_frame_rate"],
-                "fpsAverage": streamData["avg_frame_rate"]
-            })
-    print("FFprobe error: Video stream not found")
-    exit(1)
+    parsedOutput = json.loads(output)["streams"][0]
+    return({
+        "width": parsedOutput["width"],
+        "height": parsedOutput["height"],
+        "fps": parsedOutput["r_frame_rate"],
+        "fpsAverage": parsedOutput["avg_frame_rate"]
+    })
 
-def FfprobeCollectFrameInfo(inputFile): # Will be needed for a timestamp mode
-    # ffprobe -show_frames -print_format json -loglevel quiet input.mp4
-    pass
+def FfprobeCollectFrameInfo(inputFile):
+    # ffprobe -show_packets -select_streams v:0 -print_format json -loglevel quiet input.mp4
+    command = ["ffprobe", "-show_packets", "-select_streams", "v:0", "-print_format", "json", "-loglevel", "quiet",
+               inputFile]
+    output = subprocess.check_output(command, universal_newlines=True)
+    parsedOutput = json.loads(output)["packets"]
+    return({
+        "frameCount": len(parsedOutput)
+    })
 
 if __name__ == "__main__":
     # Console arguments
