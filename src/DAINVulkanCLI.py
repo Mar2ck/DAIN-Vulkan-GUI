@@ -77,17 +77,19 @@ def FfmpegEncodeFrames(inputFolder, outputFile, Framerate):
 
 #FFprobe Process Functions
 def FfprobeCollectVideoInfo(inputFile):
-    # ffprobe -show_streams -select_streams v:0 -print_format json -loglevel quiet input.mp4
-    # Some videos don't return "duration" such as apng
-    command = ["ffprobe", "-show_streams", "-select_streams", "v:0", "-print_format", "json", "-loglevel", "quiet",
-               inputFile]
+    # ffprobe -show_streams -count_packets -select_streams v:0 -print_format json -loglevel quiet input.mp4
+    # Some videos don't return "duration" and "nb_frames" such as apng
+    # "-count_packets" gives framecount as "nb_read_packets"
+    command = ["ffprobe", "-show_streams", "-count_packets", "-select_streams", "v:0",
+               "-print_format", "json", "-loglevel", "quiet", inputFile]
     output = subprocess.check_output(command, universal_newlines=True)
     parsedOutput = json.loads(output)["streams"][0]
     return({
         "width": parsedOutput["width"],
         "height": parsedOutput["height"],
         "fps": parsedOutput["r_frame_rate"],
-        "fpsAverage": parsedOutput["avg_frame_rate"]
+        "fpsAverage": parsedOutput["avg_frame_rate"],
+        "frameCount": parsedOutput["nb_read_packets"]
     })
 
 def FfprobeCollectFrameInfo(inputFile):
@@ -96,9 +98,10 @@ def FfprobeCollectFrameInfo(inputFile):
                inputFile]
     output = subprocess.check_output(command, universal_newlines=True)
     parsedOutput = json.loads(output)["packets"]
-    return({
-        "frameCount": len(parsedOutput)
-    })
+    return(parsedOutput)
+
+def CainFolderMultiplierHandler(inputFolder, outputFolder, multiplier):
+    pass
 
 if __name__ == "__main__":
     # Console arguments
@@ -109,8 +112,8 @@ if __name__ == "__main__":
     parser.add_argument("-O", "--output-folder", help="Folder to output work to", action="store",
                         default=(os.path.join(tempfile.gettempdir(), "DAIN-Vulkan-GUI")))
     ## Interpolation options
-    parser.add_argument("-s", "--frame-multiplier", help="Frame multiplier 2x,3x,etc (default=2)", action="store",
-                        type=float, default=2)
+    parser.add_argument("-m", "--frame-multiplier", help="Frame multiplier 2x,3x,etc (default=2)", action="store",
+                        type=int, default=2)
     parser.add_argument("-fps", "--target-fps", help="[Unimplemented] Calculates multiplier based on target framerate",
                         action="store")
     parser.add_argument("--interpolator", help="Pick interpolator: dain-ncnn, cain-ncnn (default=dain-ncnn)",
