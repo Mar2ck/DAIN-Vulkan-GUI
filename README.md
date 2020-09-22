@@ -14,7 +14,8 @@ Linux: `./DAINVulkanCLI" -i "/home/example/Videos/test.mp4" --output-folder "/ho
 ## Features
 ### What works
 * Sequential frame handling (Removed frames affect video length)
-* 2x, 3x, 4x, 5x, etc. Multiplier-target
+* Dain-ncnn: 2x, 3x, 4x, 5x, etc. Multiplier-target
+* Cain-ncnn: 2x, 4x, 8x, etc. Multiplier-target
 * Multi-threading (-j)
 * Multi-gpu (-g)
 
@@ -35,11 +36,9 @@ Tiles are used by default which can slow down processing. Using a tilesize that'
 
 ## Help message
 ```
-usage: DAINVulkanCLI.py [-h] -i INPUT_FILE [-o OUTPUT_FILE] [-O OUTPUT_FOLDER]
-                        [-s FRAME_MULTIPLIER] [-fps TARGET_FPS]
-                        [--interpolator INTERPOLATOR] [-g GPU_ID]
-                        [-t TILESIZE] [-j THREAD_COUNT] [--steps STEPS]
-                        [--input-fps INPUT_FPS] [--verbose]
+usage: DAINVulkanCLI.py [-h] -i INPUT_FILE [-o OUTPUT_FILE] -O OUTPUT_FOLDER [-m FRAME_MULTIPLIER]
+                        [-fps TARGET_FPS] [--interpolator INTERPOLATOR] [-g GPU_ID] [-t TILESIZE]
+                        [-j THREAD_COUNT] [--steps STEPS] [--input-fps INPUT_FPS] [--verbose]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -49,24 +48,21 @@ optional arguments:
                         Path to output final video to
   -O OUTPUT_FOLDER, --output-folder OUTPUT_FOLDER
                         Folder to output work to
-  -s FRAME_MULTIPLIER, --frame-multiplier FRAME_MULTIPLIER
+  -m FRAME_MULTIPLIER, --frame-multiplier FRAME_MULTIPLIER
                         Frame multiplier 2x,3x,etc (default=2)
   -fps TARGET_FPS, --target-fps TARGET_FPS
-                        [Unimplemented] Calculates multiplier based on target
-                        framerate
+                        [Unimplemented] Calculates multiplier based on target framerate
   --interpolator INTERPOLATOR
-                        Pick interpolator: dain-ncnn, cain-ncnn (default=dain-
-                        ncnn)
+                        Pick interpolator: dain-ncnn, cain-ncnn (default=dain-ncnn)
   -g GPU_ID, --gpu-id GPU_ID
                         GPU to use (default=auto) can be 0,1,2 for multi-gpu
   -t TILESIZE, --tilesize TILESIZE
-                        Tile size (>=128, default=256) must be multiple of 32
-                        ,can be 256,256,128 for multi-gpu
+                        Tile size (>=128, default=256) must be multiple of 32 ,can be 256,256,128
+                        for multi-gpu
   -j THREAD_COUNT, --thread-count THREAD_COUNT
-                        Thread count for load/process/save (default=1:2:2) can
-                        be 1:2,2,2:2 for multi-gpu
-  --steps STEPS         If specified only run certain steps 1,2,3 (eg. 1,2 for
-                        1 & 2 only)
+                        Thread count for load/process/save (default=1:2:2) can be 1:2,2,2:2 for
+                        multi-gpu
+  --steps STEPS         If specified only run certain steps 1,2,3 (eg. 1,2 for 1 & 2 only)
   --input-fps INPUT_FPS
                         Manually specify framerate of input video
   --verbose             Print additional info to the commandline

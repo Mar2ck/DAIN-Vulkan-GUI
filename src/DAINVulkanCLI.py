@@ -65,7 +65,7 @@ def CainVulkanFolderModeCommand(inputFolder, outputFolder): # Output frames are 
 def FfmpegExtractFrames(inputFile, outputFolder):  # "Step 1"
     # ffmpeg -i "$i" %06d.png
     pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True) # Create outputFolder
-    command = ["ffmpeg", "-i", inputFile, "-loglevel", "error", os.path.join(outputFolder, "%06d.png")]
+    command = ["ffmpeg", "-i", inputFile, "-loglevel", "error", "-vsync", "vfr", os.path.join(outputFolder, "%06d.png")]
     subprocess.run(command)
 
 def FfmpegEncodeFrames(inputFolder, outputFile, Framerate):
@@ -101,7 +101,19 @@ def FfprobeCollectFrameInfo(inputFile):
     return(parsedOutput)
 
 def CainFolderMultiplierHandler(inputFolder, outputFolder, multiplier):
-    pass
+    folderParent = pathlib.Path(outputFolder).parent
+    multiplierInternal = 1
+    cainFolderFrom = inputFolder
+    while multiplierInternal < multiplier:
+        multiplierInternal = multiplierInternal * 2
+        print("From:", cainFolderFrom)
+        cainFolderTo = os.path.join(folderParent, ("cain-" + str(multiplierInternal) + "x"))
+        print("To:", cainFolderTo)
+        print("Interpolating to:", str(multiplierInternal) + "x")
+        CainVulkanFolderModeCommand(cainFolderFrom, cainFolderTo)
+        cainFolderFrom = cainFolderTo
+    print("Renaming", cainFolderTo, "to", outputFolder)
+    os.rename(cainFolderTo, outputFolder)
 
 if __name__ == "__main__":
     # Console arguments
@@ -109,8 +121,7 @@ if __name__ == "__main__":
     ## Path Arguments
     parser.add_argument("-i", "--input-file", help="Path to input video", action="store", required=True)
     parser.add_argument("-o", "--output-file", help="Path to output final video to", action="store")
-    parser.add_argument("-O", "--output-folder", help="Folder to output work to", action="store",
-                        default=(os.path.join(tempfile.gettempdir(), "DAIN-Vulkan-GUI")))
+    parser.add_argument("-O", "--output-folder", help="Folder to output work to", action="store", required=True)
     ## Interpolation options
     parser.add_argument("-m", "--frame-multiplier", help="Frame multiplier 2x,3x,etc (default=2)", action="store",
                         type=int, default=2)
@@ -196,12 +207,13 @@ if __name__ == "__main__":
                                         folderInterpolatedFrames,
                                         str(folderInterpolatedFramesCount))
         elif args.interpolator == "cain-ncnn":
-            CainVulkanFolderModeCommand(folderOriginalFrames,
-                                        folderInterpolatedFrames)
+            CainFolderMultiplierHandler(folderOriginalFrames, folderInterpolatedFrames, args.frame_multiplier)
+            # CainVulkanFolderModeCommand(folderOriginalFrames, folderInterpolatedFrames)
         else:
             print("Invalid interpolator option")
             exit(1)
 
     if (stepsSelection is None) or ("3" in stepsSelection):
         print("Step 3: Extracting frames to output_videos")
-        FfmpegEncodeFrames(folderInterpolatedFrames, os.path.join(folderOutputVideos, "output.mp4"), str(inputFileFps * args.frame_multiplier))
+        FfmpegEncodeFrames(folderInterpolatedFrames, os.path.join(folderOutputVideos, "output.mp4"),
+                           str(inputFileFps * args.frame_multiplier))
