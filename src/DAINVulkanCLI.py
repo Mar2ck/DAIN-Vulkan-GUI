@@ -141,7 +141,7 @@ if __name__ == "__main__":
     parser.add_argument("--steps", help="If specified only run certain steps 1,2,3 (eg. 1,2 for 1 & 2 only)",
                         action="store")
     ## Debug options
-    parser.add_argument("--input-fps", help="Manually specify framerate of input video", action="store")
+    parser.add_argument("--input-fps", help="Manually specify framerate of input video", action="store", type=float)
     parser.add_argument("--verbose", help="Print additional info to the commandline", action="store_true")
     args = parser.parse_args()
 
