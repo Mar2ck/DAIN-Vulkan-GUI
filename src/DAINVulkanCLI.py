@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
+#Built-in modules
 import argparse
 import json
+import os
 import pathlib
-import tempfile
 import subprocess
 import sys
-import os
 
 programLocation = os.path.dirname(os.path.abspath(__file__))
 
@@ -64,8 +64,11 @@ def CainVulkanFolderModeCommand(inputFolder, outputFolder): # Output frames are 
 # FFmpeg Process Functions
 def FfmpegExtractFrames(inputFile, outputFolder):  # "Step 1"
     # ffmpeg -i "$i" %06d.png
+    '''
+    for -vsync: "crf" will use "r_frame_rate", "vfr" will use "avg_frame_rate"
+    '''
     pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True) # Create outputFolder
-    command = ["ffmpeg", "-i", inputFile, "-loglevel", "error", "-vsync", "vfr", os.path.join(outputFolder, "%06d.png")]
+    command = ["ffmpeg", "-i", inputFile, "-loglevel", "error", "-vsync", "cfr", os.path.join(outputFolder, "%06d.png")]
     subprocess.run(command)
 
 def FfmpegEncodeFrames(inputFolder, outputFile, Framerate):
@@ -77,19 +80,25 @@ def FfmpegEncodeFrames(inputFolder, outputFile, Framerate):
 
 #FFprobe Process Functions
 def FfprobeCollectVideoInfo(inputFile):
-    # ffprobe -show_streams -count_packets -select_streams v:0 -print_format json -loglevel quiet input.mp4
-    # Some videos don't return "duration" and "nb_frames" such as apng
-    # "-count_packets" gives framecount as "nb_read_packets"
-    command = ["ffprobe", "-show_streams", "-count_packets", "-select_streams", "v:0",
+    # ffprobe -show_streams -count_frames -select_streams v:0 -print_format json -loglevel quiet input.mp4
+    '''
+    Some videos don't return "duration" and "nb_frames" such as apng
+    "-count_frames" returns "nb_read_frames" for every format though
+
+    http://svn.ffmpeg.org/doxygen/trunk/structAVStream.html
+    "avg_frame_rate" is "Average framerate" aka: duration/framecount
+    "r_frame_rate" is "Real base framerate" which is the lowest common framerate of all frames in the video
+    '''
+    command = ["ffprobe", "-show_streams", "-count_frames", "-select_streams", "v:0",
                "-print_format", "json", "-loglevel", "quiet", inputFile]
     output = subprocess.check_output(command, universal_newlines=True)
     parsedOutput = json.loads(output)["streams"][0]
     return({
         "width": parsedOutput["width"],
         "height": parsedOutput["height"],
-        "fps": parsedOutput["r_frame_rate"],
+        "fpsReal": parsedOutput["r_frame_rate"],
         "fpsAverage": parsedOutput["avg_frame_rate"],
-        "frameCount": parsedOutput["nb_read_packets"]
+        "frameCount": parsedOutput["nb_read_frames"]
     })
 
 def FfprobeCollectFrameInfo(inputFile):
@@ -143,38 +152,38 @@ if __name__ == "__main__":
     ## Debug options
     parser.add_argument("--input-fps", help="Manually specify framerate of input video", action="store", type=float)
     parser.add_argument("--verbose", help="Print additional info to the commandline", action="store_true")
-    args = parser.parse_args()
+    args = vars(parser.parse_args())
 
     # Override global variables with arguments
-    if args.gpu_id is not None:
-        dainGpuId = args.gpu_id
-    if args.thread_count is not None:
-        dainThreads = args.thread_count
-    if args.tilesize is not None:
-        dainTileSize = args.tilesize
+    if args["gpu_id"] is not None:
+        dainGpuId = args["gpu_id"]
+    if args["thread_count"] is not None:
+        dainThreads = args["thread_count"]
+    if args["tilesize"] is not None:
+        dainTileSize = args["tilesize"]
 
-    if args.steps is None:
+    if args["steps"] is None:
         stepsSelection = None
     else:
-        stepsSelection = args.steps.split(",")
+        stepsSelection = args["steps"].split(",")
 
     print("GPU Selection:", dainGpuId)
     print("Threads:", dainThreads)
     print("Tilesize:", dainTileSize)
-    if args.verbose is True:
+    if args["verbose"] is True:
         print("Platform:", sys.platform)
 
-    inputFile = os.path.abspath(args.input_file)
-    outputFolder = os.path.abspath(args.output_folder)
+    inputFile = os.path.abspath(args["input_file"])
+    outputFolder = os.path.abspath(args["output_folder"])
     print("Input file:", inputFile)
 
     print("FFprobe: Scanning video metadata...")
     inputFileProperties = FfprobeCollectVideoInfo(inputFile)
     print(inputFileProperties)
-    if args.input_fps is not None:
-        inputFileFps = args.input_fps
+    if args["input_fps"] is not None:
+        inputFileFps = args["input_fps"]
     else:
-        fracNum, fracDenom = inputFileProperties["fpsAverage"].split("/")
+        fracNum, fracDenom = inputFileProperties["fpsReal"].split("/")
         inputFileFps = int(fracNum) / int(fracDenom)
 
     # Setup working folder
@@ -196,18 +205,18 @@ if __name__ == "__main__":
     folderOriginalFramesCount = len(folderOriginalFramesArray)
     print("Original frame count:", folderOriginalFramesCount)
     ## Calculate interpolated frames
-    folderInterpolatedFramesCount = folderOriginalFramesCount * args.frame_multiplier
+    folderInterpolatedFramesCount = folderOriginalFramesCount * args["frame_multiplier"]
     print("Interpolated frame count", folderInterpolatedFramesCount)
 
     if (stepsSelection is None) or ("2" in stepsSelection):
-        print("Step 2: Processing frames to interpolated_frames using", args.interpolator)
-        if args.interpolator == "dain-ncnn":
-            print("Interpolation Multiplier:", args.frame_multiplier)
+        print("Step 2: Processing frames to interpolated_frames using", args["interpolator"])
+        if args["interpolator"] == "dain-ncnn":
+            print("Interpolation Multiplier:", args["frame_multiplier"])
             DainVulkanFolderModeCommand(folderOriginalFrames,
                                         folderInterpolatedFrames,
                                         str(folderInterpolatedFramesCount))
-        elif args.interpolator == "cain-ncnn":
-            CainFolderMultiplierHandler(folderOriginalFrames, folderInterpolatedFrames, args.frame_multiplier)
+        elif args["interpolator"] == "cain-ncnn":
+            CainFolderMultiplierHandler(folderOriginalFrames, folderInterpolatedFrames, args["frame_multiplier"])
             # CainVulkanFolderModeCommand(folderOriginalFrames, folderInterpolatedFrames)
         else:
             print("Invalid interpolator option")
@@ -216,4 +225,4 @@ if __name__ == "__main__":
     if (stepsSelection is None) or ("3" in stepsSelection):
         print("Step 3: Extracting frames to output_videos")
         FfmpegEncodeFrames(folderInterpolatedFrames, os.path.join(folderOutputVideos, "output.mp4"),
-                           str(inputFileFps * args.frame_multiplier))
+                           str(inputFileFps * args["frame_multiplier"]))

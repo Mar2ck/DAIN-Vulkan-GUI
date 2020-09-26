@@ -1,6 +1,10 @@
+#!/usr/bin/env python3
+
+# Built-in modules
 import os
 import sys
 
+# External modules
 from PyQt5 import QtWidgets, uic
 from PyQt5.QtWidgets import QFileDialog
 
@@ -9,7 +13,8 @@ class Ui(QtWidgets.QMainWindow):
 
     def input_file_dialog_box(self):
         input_file = QFileDialog.getOpenFileName(None, 'Open File', os.getenv('HOME'), 'Videos (*.mp4; *.mkv; *.webm; '
-                                                                                       '*gif);; All Files (*)')
+                                                                                       '*gif; *.apng; *.png);;'
+                                                                                       'All Files (*)')
         if not input_file[0]:
             self.input_label.setText('Input Path.')
         else:
@@ -25,7 +30,7 @@ class Ui(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(Ui, self).__init__()
-        uic.loadUi('GUI_Layout.ui', self)
+        uic.loadUi('GUILayout.ui', self)
         self.setWindowTitle('DAIN-Vulkan-GUI')
 
         # Buttons and fields we can change
