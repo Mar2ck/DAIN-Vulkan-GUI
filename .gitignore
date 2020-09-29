@@ -128,5 +128,11 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Idea
-.idea
+# IntelliJ IDE
+.idea/
+
+# Dolphin fm metadata
+.directory
+
+# FFmpeg builds are license incompatible with gpl so exclude from repo
+src/dependencies/ffmpeg/
