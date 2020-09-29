@@ -5,39 +5,26 @@ visual difference between images via SSIM. This
 can be used to detect whether video frames
 are duplicates.
 
-https://scikit-image.org/docs/stable/api/skimage.metrics.html#skimage.metrics.structural_similarity
-
-Requires: opencv-python-headless, scikit-image, progress
+Requires: pillow, SSIM-PIL, progress
 """
 # Built-in modules
 import os
 import pathlib
 # External modules
-import cv2
-from skimage.metrics import structural_similarity
+import SSIM_PIL
+from PIL import Image
 from progress.bar import ShadyBar
 
 
-def CalculateSSIM(image0path, image1path, multichannel=False, resize=512): # resize=None disables resizing
+def CalculateSSIM(image0path, image1path, use_gpu=False):
     """Calculates SSIM based on two images"""
     # print("Processing:", image0path)
-    image0 = cv2.imread(image0path)
-    image1 = cv2.imread(image1path)
-    # In OpenCV width = 1 and height = 0
-    # if resize is not None:
-    #     if image0.shape[1] > resize:
-    #         imageWidth
-
-    if multichannel is True:
-        # Calculating using RGB instead of gray is slower but probably more accurate
-        return structural_similarity(image0, image1, multichannel=True)
-    else:
-        # Convert to gray first for ~2.5x speed increase
-        return structural_similarity(cv2.cvtColor(image0, cv2.COLOR_BGR2GRAY),
-                                     cv2.cvtColor(image1, cv2.COLOR_BGR2GRAY))
+    image0 = Image.open(image0path)
+    image1 = Image.open(image1path)
+    return SSIM_PIL.compare_ssim(image0, image1, GPU=use_gpu)
 
 
-def CalculateDirectorySSIM(directoryPath, multichannel=False, progress=False):
+def CalculateDirectorySSIM(directoryPath, use_gpu=False, progress=False):
     """Calculates the SSIM for every image in a directory
     based on it and the image that precedes it
     """
@@ -52,7 +39,7 @@ def CalculateDirectorySSIM(directoryPath, multichannel=False, progress=False):
     directoryFilesSSIM = {}
     if progress is True: progressBar = ShadyBar("Progress:", max=len(directoryFiles) - 1)
     for i in range(1, len(directoryFiles)):
-        fileSSIM = CalculateSSIM(directoryFiles[i], directoryFiles[i - 1], multichannel)
+        fileSSIM = CalculateSSIM(directoryFiles[i], directoryFiles[i - 1], use_gpu)
         # print(fileSSIM)
         directoryFilesSSIM[directoryFiles[i]] = fileSSIM
         if progress is True: progressBar.next()
@@ -67,8 +54,8 @@ if __name__ == "__main__":
     parser.add_argument("-0", "--image0", help="Path of first image")
     parser.add_argument("-1", "--image1", help="Path of second image")
     parser.add_argument("-f", "--folder", help="Path of directory containing images")
-    parser.add_argument("--multichannel", action="store_true",
-                        help="Calculate RGB channels on their own instead of combining into greyscale")
+    parser.add_argument("--gpu", action="store_true",
+                        help="Speeds up SSIM calculation via OpenCL")
     parser.add_argument("-p", "--progress", action="store_true",
                         help="Show progress bar when calculating a directory")
     args = vars(parser.parse_args())
@@ -77,9 +64,9 @@ if __name__ == "__main__":
         parser.error('Requires --image0 and --image1 or --folder')
 
     if (args["image0"] is not None) and (args["image1"] is not None):  # -image0 and -image1
-        SSIM = CalculateSSIM(args["image0"], args["image1"], args["multichannel"])
+        SSIM = CalculateSSIM(args["image0"], args["image1"], args["gpu"])
         print("SSIM: {}".format(SSIM))
     elif args["folder"] is not None:  # -folder
-        directorySSIM = CalculateDirectorySSIM(args["folder"], args["multichannel"], args["progress"])
+        directorySSIM = CalculateDirectorySSIM(args["folder"], args["gpu"], args["progress"])
         for i in sorted(directorySSIM.keys()):
             print("{}: {}".format(i, directorySSIM[i]))
