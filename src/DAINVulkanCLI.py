@@ -17,7 +17,7 @@ import subprocess
 # Local modules
 import image_similarity
 
-programLocation = os.path.dirname(os.path.abspath(__file__))
+programLocation = os.path.abspath(os.path.dirname(__file__))
 
 # Dain-ncnn-vulkan binary location
 dainNcnnExec = {
@@ -115,17 +115,16 @@ def FfmpegEncodeFrames(inputFolder, outputFile, framerate):
 
 # FFprobe Process Functions
 def FfprobeCollectVideoInfo(inputFile):
-    # ffprobe -show_streams -count_frames -select_streams v:0 -print_format json -loglevel quiet input.mp4
+    # ffprobe -show_streams -select_streams v:0 -print_format json -loglevel quiet input.mp4
     '''
     Some videos don't return "duration" and "nb_frames" such as apng
-    "-count_frames" returns "nb_read_frames" for every format though
     "nb_read_frames" won't be accurate if the input video is vfr
 
     http://svn.ffmpeg.org/doxygen/trunk/structAVStream.html
     "avg_frame_rate" is "Average framerate" aka: duration/framecount
     "r_frame_rate" is "Real base framerate" which is the lowest common framerate of all frames in the video
     '''
-    command = [ffprobeExec[system()], "-show_streams", "-count_frames", "-select_streams", "v:0",
+    command = [ffprobeExec[system()], "-show_streams", "-select_streams", "v:0",
                "-print_format", "json", "-loglevel", "quiet", inputFile]
     output = subprocess.check_output(command, universal_newlines=True)
     parsedOutput = json.loads(output)["streams"][0]
@@ -133,9 +132,7 @@ def FfprobeCollectVideoInfo(inputFile):
         "width": parsedOutput["width"],
         "height": parsedOutput["height"],
         "fpsReal": parsedOutput["r_frame_rate"],
-        "fpsAverage": parsedOutput["avg_frame_rate"],
-        "frameCount": parsedOutput["nb_read_frames"]
-    })
+        "fpsAverage": parsedOutput["avg_frame_rate"]})
 
 
 def FfprobeCollectFrameInfo(inputFile):

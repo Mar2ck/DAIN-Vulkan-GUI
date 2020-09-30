@@ -14,42 +14,42 @@ import pathlib
 # External modules
 from PIL import Image
 from SSIM_PIL import compare_ssim
-from progress.bar import ShadyBar
+from progress.bar import ShadyBar as progressBar
 
 
-def CalculateSSIM(image0path, image1path, use_gpu=True):
+def calculate_ssim(image0_path, image1_path, use_gpu=True):
     """Calculates SSIM based on two images"""
     # print("Processing:", image0path)
-    image0 = Image.open(image0path)
-    image1 = Image.open(image1path)
+    image0 = Image.open(image0_path)
+    image1 = Image.open(image1_path)
     return compare_ssim(image0, image1, GPU=use_gpu)
 
 
-def CalculateDirectorySSIM(directoryPath, use_gpu=True, progress=False):
+def calculate_directory_ssim(directory_path, use_gpu=True, progress=False):
     """Calculates the SSIM for every image in a directory
     based on it and the image that precedes it
     """
     # print(os.path.abspath(directoryPath))
-    directoryFiles = []
-    for filePath in pathlib.Path(directoryPath).glob('**/*'):  # List all files in the directory as their absolute path
-        filePathAbsolute = os.path.normpath(filePath.absolute())
-        if filePathAbsolute.endswith(('.png', '.jpg', '.jpeg', '.webp', '.bmp')):
+    directory_files = []
+    for filePath in pathlib.Path(directory_path).glob('**/*'):  # List all files in the directory as their absolute path
+        file_path_absolute = os.path.normpath(filePath.absolute())
+        if file_path_absolute.endswith(('.png', '.jpg', '.jpeg', '.webp', '.bmp')):
             # Only adds files that have image extensions, fixes problems caused by "Thumbs.db"
-            directoryFiles.append(filePathAbsolute)
-    directoryFiles.sort()
-    # print(directoryFiles)
-    directoryFilesSSIM = {}
+            directory_files.append(file_path_absolute)
+    directory_files.sort()
+    # print(directory_files)
+    directory_files_ssim = {}
     if progress is True:
-        progressBar = ShadyBar("Progress:", max=len(directoryFiles) - 1)
-    for i in range(1, len(directoryFiles)):
-        fileSSIM = CalculateSSIM(directoryFiles[i], directoryFiles[i - 1], use_gpu)
-        # print(fileSSIM)
-        directoryFilesSSIM[directoryFiles[i]] = fileSSIM
+        progress_bar_object = progressBar("Progress:", max=len(directory_files) - 1)
+    for i in range(1, len(directory_files)):
+        file_ssim = calculate_ssim(directory_files[i], directory_files[i - 1], use_gpu)
+        # print(file_ssim)
+        directory_files_ssim[directory_files[i]] = file_ssim
         if progress is True:
-            progressBar.next()
+            progress_bar_object.next()
     if progress is True:
-        progressBar.finish()
-    return directoryFilesSSIM
+        progress_bar_object.finish()
+    return directory_files_ssim
 
 
 if __name__ == "__main__":
@@ -69,9 +69,9 @@ if __name__ == "__main__":
         parser.error('Requires --image0 and --image1 or --folder')
 
     if (args["image0"] is not None) and (args["image1"] is not None):  # -image0 and -image1
-        SSIM = CalculateSSIM(args["image0"], args["image1"], useGpu)
+        SSIM = calculate_ssim(args["image0"], args["image1"], useGpu)
         print("SSIM: {}".format(SSIM))
     elif args["folder"] is not None:  # -folder
-        directorySSIM = CalculateDirectorySSIM(args["folder"], useGpu, args["progress"])
+        directorySSIM = calculate_directory_ssim(args["folder"], useGpu, args["progress"])
         for file in sorted(directorySSIM.keys()):
             print("{}: {}".format(file, directorySSIM[file]))
