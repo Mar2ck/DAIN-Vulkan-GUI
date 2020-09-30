@@ -1,45 +1,55 @@
 #!/usr/bin/env python3
 """
-This file is the core of DAIN-Vulkan-GUI and it's CLI interface
+DAIN-Vulkan-GUI: CLI Frontend
+
+AI-Powered video interpolater (eg. 30fps -> 60fps) for Vulkan devices. Based on dain-ncnn-vulkan and ffmpeg
+
+This file is the core of the DAIN-Vulkan-GUI project and it's command-line interface
 """
-#Built-in modules
+# Built-in modules
 import argparse
 import json
 import os
 import pathlib
 from platform import system
-from shutil import which
+from shutil import which, rmtree
 import subprocess
+# Local modules
+import image_similarity
 
 programLocation = os.path.dirname(os.path.abspath(__file__))
 
 # Dain-ncnn-vulkan binary location
-dainNcnnExec = {}
-dainNcnnExec["Windows"] = os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "dain-ncnn-vulkan.exe")
-dainNcnnExec["Darwin"] = os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "dain-ncnn-vulkan-macos")
-dainNcnnExec["Linux"] = os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "dain-ncnn-vulkan-ubuntu")
+dainNcnnExec = {
+    "Windows": os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "dain-ncnn-vulkan.exe"),
+    "Darwin": os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "dain-ncnn-vulkan-macos"),
+    "Linux": os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "dain-ncnn-vulkan-ubuntu")}
 dainNcnnExecDirectory = pathlib.Path(dainNcnnExec[system()]).parent
+
 # Cain-ncnn-vulkan binary location
-cainNcnnExec = {}
-cainNcnnExec["Windows"] = os.path.join(programLocation, "dependencies", "cain-ncnn-vulkan", "cain-ncnn-vulkan.exe")
-cainNcnnExec["Darwin"] = os.path.join(programLocation, "dependencies", "cain-ncnn-vulkan", "cain-ncnn-vulkan-macos")
-cainNcnnExec["Linux"] = os.path.join(programLocation, "dependencies", "cain-ncnn-vulkan", "cain-ncnn-vulkan-ubuntu")
+cainNcnnExec = {
+    "Windows": os.path.join(programLocation, "dependencies", "cain-ncnn-vulkan", "cain-ncnn-vulkan.exe"),
+    "Darwin": os.path.join(programLocation, "dependencies", "cain-ncnn-vulkan", "cain-ncnn-vulkan-macos"),
+    "Linux": os.path.join(programLocation, "dependencies", "cain-ncnn-vulkan", "cain-ncnn-vulkan-ubuntu")}
 cainNcnnExecDirectory = pathlib.Path(cainNcnnExec[system()]).parent
 
 # FFmpeg binary location
-ffmpegExec = {}
-ffmpegExec["Windows"] = os.path.join(programLocation, "dependencies", "ffmpeg", "windows", "ffmpeg.exe")
-ffmpegExec["Darwin"] = os.path.join(programLocation, "dependencies", "ffmpeg", "macos", "ffmpeg")
-ffmpegExec["Linux"] = os.path.join(programLocation, "dependencies", "ffmpeg", "linux", "ffmpeg")
-if os.path.isfile(ffmpegExec[system()]) is False:
-    ffmpegExec[system()] = which("ffmpeg") # Use the system version if bundled version not found
+ffmpegExec = {
+    "Windows": os.path.join(programLocation, "dependencies", "ffmpeg", "windows", "ffmpeg.exe"),
+    "Darwin": os.path.join(programLocation, "dependencies", "ffmpeg", "macos", "ffmpeg"),
+    "Linux": os.path.join(programLocation, "dependencies", "ffmpeg", "linux", "ffmpeg")}
+
 # FFprobe binary location
-ffprobeExec = {}
-ffprobeExec["Windows"] = os.path.join(programLocation, "dependencies", "ffmpeg", "windows", "ffprobe.exe")
-ffprobeExec["Darwin"] = os.path.join(programLocation, "dependencies", "ffmpeg", "macos", "ffprobe")
-ffprobeExec["Linux"] = os.path.join(programLocation, "dependencies", "ffmpeg", "linux", "ffprobe")
+ffprobeExec = {
+    "Windows": os.path.join(programLocation, "dependencies", "ffmpeg", "windows", "ffprobe.exe"),
+    "Darwin": os.path.join(programLocation, "dependencies", "ffmpeg", "macos", "ffprobe"),
+    "Linux": os.path.join(programLocation, "dependencies", "ffmpeg", "linux", "ffprobe")}
+
+# Use the system version if static version not found
+if os.path.isfile(ffmpegExec[system()]) is False:
+    ffmpegExec[system()] = which("ffmpeg")
 if os.path.isfile(ffprobeExec[system()]) is False:
-    ffprobeExec[system()] = which("ffprobe") # Use the system version if bundled version not found
+    ffprobeExec[system()] = which("ffprobe")
 
 # Interpolation Defaults
 dainGpuId = "auto"
@@ -47,7 +57,7 @@ dainThreads = "1:1:1"
 dainTileSize = "256"
 cainTileSize = "512"
 
-
+# Dain-ncnn Process Functions
 def DainVulkanFileModeCommand(input0File, input1File, outputFile, time_step="0.5",
                               tile_size=dainTileSize, gpu_id=dainGpuId, threads=dainThreads):
     pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
@@ -59,12 +69,15 @@ def DainVulkanFileModeCommand(input0File, input1File, outputFile, time_step="0.5
 
 def DainVulkanFolderModeCommand(inputFolder, outputFolder, targetFrames,
                                 tile_size=dainTileSize, gpu_id=dainGpuId, threads=dainThreads):
+    if os.path.isdir(outputFolder) is True:  # Delete output folder if it exists already
+        print("\"{}\" already exists, deleting".format(outputFolder))
+        rmtree(outputFolder)
     pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True)  # Create outputFolder
     command = [dainNcnnExec[system()], "-i", os.path.abspath(inputFolder), "-o", os.path.abspath(outputFolder),
                "-n", targetFrames, "-t", tile_size, "-g", gpu_id, "-j", threads]
     subprocess.run(command, cwd=dainNcnnExecDirectory)
 
-
+# Cain-ncnn Process Functions
 def CainVulkanFileModeCommand(input0File, input1File, outputFile,
                               tile_size=cainTileSize, gpu_id=dainGpuId, threads=dainThreads): # Doesn't support timestep
     pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
@@ -87,18 +100,20 @@ def FfmpegExtractFrames(inputFile, outputFolder):  # "Step 1"
     for -vsync: "crf" will use "r_frame_rate", "vfr" will use "avg_frame_rate"
     '''
     pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True) # Create outputFolder
-    command = [ffmpegExec[system()], "-i", inputFile, "-loglevel", "error", "-vsync", "cfr", os.path.join(outputFolder, "%06d.png")]
+    command = [ffmpegExec[system()], "-i", inputFile, "-loglevel", "error", "-vsync", "cfr",
+               os.path.join(outputFolder, "%06d.png")]
     subprocess.run(command)
 
 
 def FfmpegEncodeFrames(inputFolder, outputFile, framerate):
     # ffmpeg -framerate 48 -i interpolated_frames/%06d.png output.mp4
     pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True) # Create parent folder of outputFile
-    command = [ffmpegExec[system()], "-framerate", framerate, "-i", os.path.join(inputFolder, "%06d.png"), "-crf", "18", "-y",
-               "-loglevel", "error", outputFile]
+    command = [ffmpegExec[system()], "-framerate", framerate, "-i", os.path.join(inputFolder, "%06d.png"), "-crf", "18",
+               "-y", "-loglevel", "error", outputFile]
+    # print("Executing:", " ".join(command))
     subprocess.run(command)
 
-#FFprobe Process Functions
+# FFprobe Process Functions
 def FfprobeCollectVideoInfo(inputFile):
     # ffprobe -show_streams -count_frames -select_streams v:0 -print_format json -loglevel quiet input.mp4
     '''
@@ -136,105 +151,121 @@ def CainFolderMultiplierHandler(inputFolder, outputFolder, multiplier):
     folderParent = pathlib.Path(outputFolder).parent
     multiplierInternal = 1
     cainFolderFrom = inputFolder
-    while multiplierInternal < multiplier:
-        multiplierInternal = multiplierInternal * 2
-        print("From:", cainFolderFrom)
-        cainFolderTo = os.path.join(folderParent, ("cain-" + str(multiplierInternal) + "x"))
-        print("To:", cainFolderTo)
-        print("Interpolating to:", str(multiplierInternal) + "x")
-        CainVulkanFolderModeCommand(cainFolderFrom, cainFolderTo)
-        cainFolderFrom = cainFolderTo
-    print("Renaming", cainFolderTo, "to", outputFolder)
-    os.rename(cainFolderTo, outputFolder)
+    if multiplier <= 1:
+        raise ValueError("Multiplier must be higher than 1")
+    else:
+        if not ((multiplier & (multiplier-1) == 0) and multiplier != 0):  # Check if not a power of 2
+            raise ValueError("Multiplier must be a power of 2 (2, 4, 8, etc.)")
+        else:
+            cainOutputFolders = []
+            while multiplierInternal < multiplier:
+                multiplierInternal = multiplierInternal * 2
+                print("Interpolating to:", str(multiplierInternal) + "x")
+
+                print("From: \"{}\"".format(cainFolderFrom))
+                cainFolderTo = os.path.join(folderParent, ("cain-" + str(multiplierInternal) + "x"))
+                cainOutputFolders.append(cainFolderTo)
+                print("To: \"{}\"".format(cainFolderTo))
+
+                CainVulkanFolderModeCommand(cainFolderFrom, cainFolderTo)
+                cainFolderFrom = cainFolderTo  # Set last output folder to the input folder for the next loop
+            print("Renaming \"{}\" to \"{}\"".format(cainFolderTo, outputFolder))
+            if os.path.isdir(outputFolder) is True:
+                print("\"{}\" already exists, deleting".format(outputFolder))
+                rmtree(outputFolder)
+            os.rename(cainFolderTo, outputFolder)
+            if cainOutputFolders[:-1]:
+                print("Deleting leftover folders:", cainOutputFolders[:-1])
+                for folder in cainOutputFolders[:-1]:
+                    rmtree(folder)
 
 if __name__ == "__main__":
     # Console arguments
     parser = argparse.ArgumentParser()
-    ## Path Arguments
-    parser.add_argument("-i", "--input-file", help="Path to input video", action="store", required=True)
-    parser.add_argument("-o", "--output-file", help="Path to output final video to", action="store")
-    parser.add_argument("-O", "--output-folder", help="Folder to output work to", action="store", required=True)
+    ## Path options
+    parser.add_argument("-i", "--input-file", required=True, help="Path to input video")
+    parser.add_argument("-o", "--output-file", help="Path to output final video to")
+    parser.add_argument("-O", "--output-folder", required=True, help="Folder to output work to", )
     ## Interpolation options
-    parser.add_argument("-m", "--frame-multiplier", help="Frame multiplier 2x,3x,etc (default=2)", action="store",
-                        type=int, default=2)
-    parser.add_argument("-fps", "--target-fps", help="[Unimplemented] Calculates multiplier based on target framerate",
-                        action="store")
-    parser.add_argument("--interpolator", help="Pick interpolator: dain-ncnn, cain-ncnn (default=dain-ncnn)",
-                        action="store", default="dain-ncnn")
+    parser.add_argument("-m", "--frame-multiplier", type=int, default=2, help="Frame multiplier 2x,3x,etc (default=2)")
+    parser.add_argument("--target-fps", help="[Unimplemented] Calculates frame multiplier based on a target framerate")
+    parser.add_argument("--interpolator", default="dain-ncnn", help="Pick interpolator: dain-ncnn, cain-ncnn "
+                                                                    "(default=dain-ncnn)")
     ## Dain-ncnn/Cain-ncnn pass-through options
-    parser.add_argument("-g", "--gpu-id", help="GPU to use (default=auto) can be 0,1,2 for multi-gpu", action="store")
-    parser.add_argument("-t", "--tilesize",
-                        help="Tile size (>=128, default=256) must be multiple of 32 ,can be 256,256,128 for multi-gpu",
-                        action="store")
-    parser.add_argument("-j", "--thread-count",
-                        help="Thread count for load/process/save (default=1:2:2) can be 1:2,2,2:2 for multi-gpu",
-                        action="store")
-    ## Step arguments
-    parser.add_argument("--steps", help="If specified only run certain steps 1,2,3 (eg. 1,2 for 1 & 2 only)",
-                        action="store")
+    parser.add_argument("-g", "--gpu-id", help="GPU to use (default=auto) can be 0,1,2 for multi-gpu")
+    parser.add_argument("-t", "--tilesize", help="Tile size (>=128, default=256) must be multiple of 32, "
+                                                 "can be 256,256,128 for multi-gpu")
+    parser.add_argument("-j", "--thread-count", help="Thread count for load/process/save (default=1:2:2) can be "
+                                                     "1:2,2,2:2 for multi-gpu")
+    ## Step options
+    parser.add_argument("--steps", help="If specified only run certain steps 1,2,3 (eg. 1,2 for 1 & 2 only)")
+    ## Output file options
+    parser.add_argument("--video-type", default="mp4", help="Video type for output video eg. mp4, webm, mkv "
+                                                            "(default=mp4)")
     ## Debug options
-    parser.add_argument("--input-fps", help="Manually specify framerate of input video", action="store", type=float)
-    parser.add_argument("--verbose", help="Print additional info to the commandline", action="store_true")
+    parser.add_argument("--input-fps", type=float, help="Manually specify framerate of input video")
+    parser.add_argument("--verbose", action="store_true", help="Print additional info to the commandline")
     args = vars(parser.parse_args())
 
-    # Override global variables with arguments
+    # Print interpolator options to terminal/Override interpolation defaults with arguments if specified
     if args["gpu_id"] is not None:
         dainGpuId = args["gpu_id"]
+    print("GPU Selection:", dainGpuId)
     if args["thread_count"] is not None:
         dainThreads = args["thread_count"]
+    print("Threads:", dainThreads)
     if args["tilesize"] is not None:
         dainTileSize = args["tilesize"]
+    print("Tilesize:", dainTileSize)
+    print("Platform:", system())
 
+    # Steps
     if args["steps"] is None:
         stepsSelection = None
     else:
         stepsSelection = args["steps"].split(",")
 
-    print("GPU Selection:", dainGpuId)
-    print("Threads:", dainThreads)
-    print("Tilesize:", dainTileSize)
-    if args["verbose"] is True:
-        print("Platform:", system())
-
+    # Input/Output Variables
     inputFile = os.path.abspath(args["input_file"])
-    outputFolder = os.path.abspath(args["output_folder"])
     print("Input file:", inputFile)
+    inputFileName = pathlib.Path(inputFile).stem  # Filename of input file without extension
+    outputFolder = os.path.abspath(args["output_folder"])
+    inputFileNameSuffixes = []
 
-    print("FFprobe: Scanning video metadata...")
-    inputFileProperties = FfprobeCollectVideoInfo(inputFile)
-    print(inputFileProperties)
+    # Use specified fps or grab fps from input file
     if args["input_fps"] is not None:
         inputFileFps = args["input_fps"]
     else:
+        print("FFprobe: Scanning video metadata for framerate...")
+        inputFileProperties = FfprobeCollectVideoInfo(inputFile)
+        print(inputFileProperties)
         fracNum, fracDenom = inputFileProperties["fpsReal"].split("/")
         inputFileFps = int(fracNum) / int(fracDenom)
 
-    # Setup working folder
-    folderBase = os.path.join(outputFolder, pathlib.Path(inputFile).stem)
+    # Setup working folder and predefined output folders
+    folderBase = os.path.join(outputFolder, inputFileName)
     print("Working Directory:", folderBase)
-    ## Setup original_frames folder
     folderOriginalFrames = os.path.join(folderBase, "original_frames")
-    ## Setup interpolated_frames folder
     folderInterpolatedFrames = os.path.join(folderBase, "interpolated_frames")
-    ## Setup output_videos folder
     folderOutputVideos = os.path.join(folderBase, "output_videos")
 
+    # Step 1: Original Video -> Original Frames
     if (stepsSelection is None) or ("1" in stepsSelection):
         print("Step 1: Extracting frames to original_frames")
         FfmpegExtractFrames(inputFile, folderOriginalFrames)
 
-    ## Analyse original frames
-    folderOriginalFramesArray = sorted(os.listdir(folderOriginalFrames))
-    folderOriginalFramesCount = len(folderOriginalFramesArray)
+    # Count original frames
+    folderOriginalFramesCount = len(sorted(os.listdir(folderOriginalFrames)))
     print("Original frame count:", folderOriginalFramesCount)
-    ## Calculate interpolated frames
+    # Calculate interpolated frames by multiplying original frames
     folderInterpolatedFramesCount = folderOriginalFramesCount * args["frame_multiplier"]
     print("Interpolated frame count", folderInterpolatedFramesCount)
 
+    # Step 2: Original Frames -> Interpolated Frames
     if (stepsSelection is None) or ("2" in stepsSelection):
         print("Step 2: Processing frames to interpolated_frames using", args["interpolator"])
         if args["interpolator"] == "dain-ncnn":
-            print("Interpolation Multiplier:", args["frame_multiplier"])
+            print("Interpolating to: {}x".format(args["frame_multiplier"]))
             DainVulkanFolderModeCommand(folderOriginalFrames,
                                         folderInterpolatedFrames,
                                         str(folderInterpolatedFramesCount))
@@ -245,7 +276,19 @@ if __name__ == "__main__":
             print("Invalid interpolator option")
             exit(1)
 
+    # Set filename suffix even if step 2 skipped
+    if args["interpolator"] == "dain-ncnn":
+        inputFileNameSuffixes.append("-Dain{}x".format(args["frame_multiplier"]))
+    elif args["interpolator"] == "cain-ncnn":
+        inputFileNameSuffixes.append("-Cain{}x".format(args["frame_multiplier"]))
+    else:
+        print("Invalid interpolator option")
+        exit(1)
+
+    # Step 3: Interpolated Frames -> Output Video
     if (stepsSelection is None) or ("3" in stepsSelection):
         print("Step 3: Extracting frames to output_videos")
-        FfmpegEncodeFrames(folderInterpolatedFrames, os.path.join(folderOutputVideos, "output.mp4"),
+        FfmpegEncodeFrames(folderInterpolatedFrames,
+                           os.path.join(folderOutputVideos, inputFileName + "".join(inputFileNameSuffixes) + "."
+                                        + args["video_type"]),
                            str(inputFileFps * args["frame_multiplier"]))
