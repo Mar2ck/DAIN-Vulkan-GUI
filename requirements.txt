@@ -1,0 +1,4 @@
+Pillow>=7.2.0
+progress>=1.5
+pyopencl>=2020.2.2
+SSIM-PIL>=1.0.10

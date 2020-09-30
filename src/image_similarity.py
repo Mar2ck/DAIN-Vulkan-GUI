@@ -12,8 +12,8 @@ Optional: pyopencl
 import os
 import pathlib
 # External modules
-import SSIM_PIL
 from PIL import Image
+from SSIM_PIL import compare_ssim
 from progress.bar import ShadyBar
 
 
@@ -22,7 +22,7 @@ def CalculateSSIM(image0path, image1path, use_gpu=True):
     # print("Processing:", image0path)
     image0 = Image.open(image0path)
     image1 = Image.open(image1path)
-    return SSIM_PIL.compare_ssim(image0, image1, GPU=use_gpu)
+    return compare_ssim(image0, image1, GPU=use_gpu)
 
 
 def CalculateDirectorySSIM(directoryPath, use_gpu=True, progress=False):
@@ -31,20 +31,24 @@ def CalculateDirectorySSIM(directoryPath, use_gpu=True, progress=False):
     """
     # print(os.path.abspath(directoryPath))
     directoryFiles = []
-    for filePath in pathlib.Path(directoryPath).glob('**/*'): # List all files in the directory as their absolute path
+    for filePath in pathlib.Path(directoryPath).glob('**/*'):  # List all files in the directory as their absolute path
         filePathAbsolute = os.path.normpath(filePath.absolute())
-        if filePathAbsolute.endswith(('.png', '.jpg', '.jpeg', '.webp', '.bmp')): # Only adds files that have image extensions, fixes problems caused by "Thumbs.db"
+        if filePathAbsolute.endswith(('.png', '.jpg', '.jpeg', '.webp', '.bmp')):
+            # Only adds files that have image extensions, fixes problems caused by "Thumbs.db"
             directoryFiles.append(filePathAbsolute)
     directoryFiles.sort()
     # print(directoryFiles)
     directoryFilesSSIM = {}
-    if progress is True: progressBar = ShadyBar("Progress:", max=len(directoryFiles) - 1)
+    if progress is True:
+        progressBar = ShadyBar("Progress:", max=len(directoryFiles) - 1)
     for i in range(1, len(directoryFiles)):
         fileSSIM = CalculateSSIM(directoryFiles[i], directoryFiles[i - 1], use_gpu)
         # print(fileSSIM)
         directoryFilesSSIM[directoryFiles[i]] = fileSSIM
-        if progress is True: progressBar.next()
-    if progress is True: progressBar.finish()
+        if progress is True:
+            progressBar.next()
+    if progress is True:
+        progressBar.finish()
     return directoryFilesSSIM
 
 
@@ -69,5 +73,5 @@ if __name__ == "__main__":
         print("SSIM: {}".format(SSIM))
     elif args["folder"] is not None:  # -folder
         directorySSIM = CalculateDirectorySSIM(args["folder"], useGpu, args["progress"])
-        for i in sorted(directorySSIM.keys()):
-            print("{}: {}".format(i, directorySSIM[i]))
+        for file in sorted(directorySSIM.keys()):
+            print("{}: {}".format(file, directorySSIM[file]))
