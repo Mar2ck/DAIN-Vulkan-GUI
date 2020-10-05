@@ -1,5 +1,0 @@
-https://github.com/nihui/cain-ncnn-vulkan
-Buids from commit 8561211
-Windows2016
-Ubuntu18.04
-MacOS10.15

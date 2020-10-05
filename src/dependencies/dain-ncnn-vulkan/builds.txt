@@ -1,5 +1,0 @@
-https://github.com/nihui/dain-ncnn-vulkan
-Buids from commit 79257cd
-Windows2016
-Ubuntu18.04
-MacOS10.15

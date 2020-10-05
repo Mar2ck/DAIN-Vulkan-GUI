@@ -15,41 +15,8 @@ from platform import system
 from shutil import which, rmtree
 import subprocess
 # Local modules
+import locations
 import image_similarity
-
-programLocation = os.path.abspath(os.path.dirname(__file__))
-
-# Dain-ncnn-vulkan binary location
-dainNcnnExec = {
-    "Windows": os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "dain-ncnn-vulkan.exe"),
-    "Darwin": os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "dain-ncnn-vulkan-macos"),
-    "Linux": os.path.join(programLocation, "dependencies", "dain-ncnn-vulkan", "dain-ncnn-vulkan-ubuntu")}
-dainNcnnExecDirectory = pathlib.Path(dainNcnnExec[system()]).parent
-
-# Cain-ncnn-vulkan binary location
-cainNcnnExec = {
-    "Windows": os.path.join(programLocation, "dependencies", "cain-ncnn-vulkan", "cain-ncnn-vulkan.exe"),
-    "Darwin": os.path.join(programLocation, "dependencies", "cain-ncnn-vulkan", "cain-ncnn-vulkan-macos"),
-    "Linux": os.path.join(programLocation, "dependencies", "cain-ncnn-vulkan", "cain-ncnn-vulkan-ubuntu")}
-cainNcnnExecDirectory = pathlib.Path(cainNcnnExec[system()]).parent
-
-# FFmpeg binary location
-ffmpegExec = {
-    "Windows": os.path.join(programLocation, "dependencies", "ffmpeg", "windows", "ffmpeg.exe"),
-    "Darwin": os.path.join(programLocation, "dependencies", "ffmpeg", "macos", "ffmpeg"),
-    "Linux": os.path.join(programLocation, "dependencies", "ffmpeg", "linux", "ffmpeg")}
-
-# FFprobe binary location
-ffprobeExec = {
-    "Windows": os.path.join(programLocation, "dependencies", "ffmpeg", "windows", "ffprobe.exe"),
-    "Darwin": os.path.join(programLocation, "dependencies", "ffmpeg", "macos", "ffprobe"),
-    "Linux": os.path.join(programLocation, "dependencies", "ffmpeg", "linux", "ffprobe")}
-
-# Use the system version if static version not found
-if os.path.isfile(ffmpegExec[system()]) is False:
-    ffmpegExec[system()] = which("ffmpeg")
-if os.path.isfile(ffprobeExec[system()]) is False:
-    ffprobeExec[system()] = which("ffprobe")
 
 # Interpolation Defaults
 dainGpuId = "auto"
@@ -61,10 +28,10 @@ cainTileSize = "512"
 def DainVulkanFileModeCommand(input0File, input1File, outputFile, time_step="0.5",
                               tile_size=dainTileSize, gpu_id=dainGpuId, threads=dainThreads):
     pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
-    command = [dainNcnnExec[system()], "-0", os.path.abspath(input0File), "-1", os.path.abspath(input1File),
+    command = [locations.DAIN_NCNN_VULKAN_BIN, "-0", os.path.abspath(input0File), "-1", os.path.abspath(input1File),
                "-o", os.path.abspath(outputFile), "-s", time_step, "-t", tile_size, "-g", gpu_id,
                "-j", threads]
-    subprocess.run(command, cwd=dainNcnnExecDirectory)
+    subprocess.run(command, cwd=locations.DAIN_NCNN_VULKAN_LOCATION)
 
 
 def DainVulkanFolderModeCommand(inputFolder, outputFolder, targetFrames,
@@ -73,25 +40,26 @@ def DainVulkanFolderModeCommand(inputFolder, outputFolder, targetFrames,
         print("\"{}\" already exists, deleting".format(outputFolder))
         rmtree(outputFolder)
     pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True)  # Create outputFolder
-    command = [dainNcnnExec[system()], "-i", os.path.abspath(inputFolder), "-o", os.path.abspath(outputFolder),
+    command = [locations.DAIN_NCNN_VULKAN_BIN, "-i", os.path.abspath(inputFolder), "-o", os.path.abspath(outputFolder),
                "-n", targetFrames, "-t", tile_size, "-g", gpu_id, "-j", threads]
-    subprocess.run(command, cwd=dainNcnnExecDirectory)
+    subprocess.run(command, cwd=locations.DAIN_NCNN_VULKAN_LOCATION)
 
 # Cain-ncnn Process Functions
 def CainVulkanFileModeCommand(input0File, input1File, outputFile,
                               tile_size=cainTileSize, gpu_id=dainGpuId, threads=dainThreads): # Doesn't support timestep
     pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
-    command = [cainNcnnExec[system()], "-0", os.path.abspath(input0File), "-1", os.path.abspath(input1File),
+    command = [locations.CAIN_NCNN_VULKAN_BIN, "-0", os.path.abspath(input0File), "-1", os.path.abspath(input1File),
                "-o", os.path.abspath(outputFile), "-t", tile_size, "-g", gpu_id, "-j", threads]
-    subprocess.run(command, cwd=cainNcnnExecDirectory)
+    subprocess.run(command, cwd=locations.CAIN_NCNN_VULKAN_LOCATION)
 
 
 def CainVulkanFolderModeCommand(inputFolder, outputFolder,
                                 tile_size=cainTileSize, gpu_id=dainGpuId, threads=dainThreads):
     pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True)  # Create outputFolder
-    command = [cainNcnnExec[system()], "-i", os.path.abspath(inputFolder), "-o", os.path.abspath(outputFolder),
+    command = [locations.CAIN_NCNN_VULKAN_BIN, "-i", os.path.abspath(inputFolder), "-o", os.path.abspath(outputFolder),
                "-t", tile_size, "-g", gpu_id, "-j", threads]
-    subprocess.run(command, cwd=cainNcnnExecDirectory)
+    # print(" ".join(command))
+    subprocess.run(command, cwd=locations.CAIN_NCNN_VULKAN_LOCATION)
 
 # FFmpeg Process Functions
 def FfmpegExtractFrames(inputFile, outputFolder):  # "Step 1"
@@ -100,7 +68,7 @@ def FfmpegExtractFrames(inputFile, outputFolder):  # "Step 1"
     for -vsync: "crf" will use "r_frame_rate", "vfr" will use "avg_frame_rate"
     '''
     pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True) # Create outputFolder
-    command = [ffmpegExec[system()], "-i", inputFile, "-loglevel", "error", "-vsync", "cfr",
+    command = [locations.FFMPEG_BIN, "-i", inputFile, "-loglevel", "error", "-vsync", "cfr",
                os.path.join(outputFolder, "%06d.png")]
     subprocess.run(command)
 
@@ -108,7 +76,7 @@ def FfmpegExtractFrames(inputFile, outputFolder):  # "Step 1"
 def FfmpegEncodeFrames(inputFolder, outputFile, framerate):
     # ffmpeg -framerate 48 -i interpolated_frames/%06d.png output.mp4
     pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True) # Create parent folder of outputFile
-    command = [ffmpegExec[system()], "-framerate", framerate, "-i", os.path.join(inputFolder, "%06d.png"), "-crf", "18",
+    command = [locations.FFMPEG_BIN, "-framerate", framerate, "-i", os.path.join(inputFolder, "%06d.png"), "-crf", "18",
                "-y", "-loglevel", "error", outputFile]
     # print("Executing:", " ".join(command))
     subprocess.run(command)
@@ -124,7 +92,7 @@ def FfprobeCollectVideoInfo(inputFile):
     "avg_frame_rate" is "Average framerate" aka: duration/framecount
     "r_frame_rate" is "Real base framerate" which is the lowest common framerate of all frames in the video
     '''
-    command = [ffprobeExec[system()], "-show_streams", "-select_streams", "v:0",
+    command = [locations.FFPROBE_BIN, "-show_streams", "-select_streams", "v:0",
                "-print_format", "json", "-loglevel", "quiet", inputFile]
     output = subprocess.check_output(command, universal_newlines=True)
     parsedOutput = json.loads(output)["streams"][0]
@@ -137,7 +105,7 @@ def FfprobeCollectVideoInfo(inputFile):
 
 def FfprobeCollectFrameInfo(inputFile):
     # ffprobe -show_packets -select_streams v:0 -print_format json -loglevel quiet input.mp4
-    command = [ffprobeExec[system()], "-show_packets", "-select_streams", "v:0", "-print_format", "json", "-loglevel", "quiet",
+    command = [locations.FFPROBE_BIN, "-show_packets", "-select_streams", "v:0", "-print_format", "json", "-loglevel", "quiet",
                inputFile]
     output = subprocess.check_output(command, universal_newlines=True)
     parsedOutput = json.loads(output)["packets"]
@@ -213,6 +181,7 @@ if __name__ == "__main__":
     print("Threads:", dainThreads)
     if args["tilesize"] is not None:
         dainTileSize = args["tilesize"]
+        cainTileSize = args["tilesize"]
     print("Tilesize:", dainTileSize)
     print("Platform:", system())
 

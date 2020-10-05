@@ -134,5 +134,5 @@ dmypy.json
 # Dolphin fm metadata
 .directory
 
-# FFmpeg builds are license incompatible with gpl so exclude from repo
-src/dependencies/ffmpeg/
+# Don't store large binaries in git repo
+dependencies/
