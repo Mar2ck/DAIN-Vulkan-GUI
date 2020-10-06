@@ -136,3 +136,4 @@ dmypy.json
 
 # Don't store large binaries in git repo
 dependencies/
+src/dependencies/

@@ -30,7 +30,7 @@ class Ui(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(Ui, self).__init__()
-        uic.loadUi('GUILayout.ui', self)
+        uic.loadUi('gui_layout.ui', self)
         self.setWindowTitle('DAIN-Vulkan-GUI')
 
         # Buttons and fields we can change

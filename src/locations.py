@@ -3,8 +3,8 @@ from pathlib import Path
 from platform import system
 from shutil import which
 
-# Project root folder (parent folder of this file)
-ROOT_DIR = os.path.normpath(Path(os.path.dirname(__file__)).parent)
+# Project root folder
+ROOT_DIR = os.path.dirname(__file__)
 
 # Dain-ncnn-vulkan binary locations
 DAIN_NCNN_VULKAN = {
