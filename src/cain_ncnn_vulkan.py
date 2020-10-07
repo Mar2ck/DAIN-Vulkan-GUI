@@ -45,5 +45,5 @@ def interpolate_folder_mode(input_folder, output_folder,
            "-t", (DEFAULT_TILESIZE if tile_size is None else tile_size),
            "-g", (DEFAULT_GPUID if gpuid is None else gpuid),
            "-j", (DEFAULT_THREADS if threads is None else threads)]
-    print(" ".join(cmd))
+    logging.info(" ".join(cmd))
     subprocess.run(cmd, cwd=locations.CAIN_NCNN_VULKAN_LOCATION)

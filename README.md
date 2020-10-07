@@ -12,16 +12,15 @@ Linux: `./DAINVulkanCLI" -i "/home/example/Videos/test.mp4" --output-folder "/ho
 "vkQueueSubmit failed" and "vkAllocateMemory failed" happens when there isn't enough VRAM for the current frame. Use a lower tile size or downscale the video. 
 
 ## Features
-### What works
-* Sequential frame handling (Removed frames affect video length)
+* Static frame interpolation
 * Dain-ncnn: 2x, 3x, 4x, 5x, etc. Multiplier-target
 * Cain-ncnn: 2x, 4x, 8x, etc. Multiplier-target
 * Multi-threading (-j)
 * Multi-gpu (-g)
 
-### Not implemented yet
-* Timestamp frame handling (Video length preserved, times between frames accounted for)
-* Perfect loop mode (Last frame leads into the first)
+### Todo
+* Dynamic frame interpolation (duplicate frames are interpolated)
+* Perfect loop (Last frame leads into the first)
 * Framerate-target
 
 ### Needs to be fixed by Dain-ncnn author
@@ -36,9 +35,12 @@ Tiles are used by default which can slow down processing. Using a tilesize that'
 
 ## Help message
 ```
-usage: DAINVulkanCLI.py [-h] -i INPUT_FILE [-o OUTPUT_FILE] -O OUTPUT_FOLDER [-m FRAME_MULTIPLIER]
-                        [-fps TARGET_FPS] [--interpolator INTERPOLATOR] [-g GPU_ID] [-t TILESIZE]
-                        [-j THREAD_COUNT] [--steps STEPS] [--input-fps INPUT_FPS] [--verbose]
+usage: DAINVulkanCLI.py [-h] -i INPUT_FILE [-o OUTPUT_FILE] -O OUTPUT_FOLDER
+                        [-m FRAME_MULTIPLIER] [--target-fps TARGET_FPS]
+                        [--interpolator INTERPOLATOR] [-g GPU_ID]
+                        [-t TILESIZE] [-j THREAD_COUNT] [--steps STEPS]
+                        [--video-type VIDEO_TYPE] [--input-fps INPUT_FPS]
+                        [--verbose] [--debug]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -50,22 +52,29 @@ optional arguments:
                         Folder to output work to
   -m FRAME_MULTIPLIER, --frame-multiplier FRAME_MULTIPLIER
                         Frame multiplier 2x,3x,etc (default=2)
-  -fps TARGET_FPS, --target-fps TARGET_FPS
-                        [Unimplemented] Calculates multiplier based on target framerate
+  --target-fps TARGET_FPS
+                        [Unimplemented] Calculates frame multiplier based on a
+                        target framerate
   --interpolator INTERPOLATOR
-                        Pick interpolator: dain-ncnn, cain-ncnn (default=dain-ncnn)
+                        Pick interpolator: dain-ncnn, cain-ncnn (default=dain-
+                        ncnn)
   -g GPU_ID, --gpu-id GPU_ID
                         GPU to use (default=auto) can be 0,1,2 for multi-gpu
   -t TILESIZE, --tilesize TILESIZE
-                        Tile size (>=128, default=256) must be multiple of 32 ,can be 256,256,128
-                        for multi-gpu
+                        Tile size (>=128, default=256) must be multiple of 32,
+                        can be 256,256,128 for multi-gpu
   -j THREAD_COUNT, --thread-count THREAD_COUNT
-                        Thread count for load/process/save (default=1:2:2) can be 1:2,2,2:2 for
-                        multi-gpu
-  --steps STEPS         If specified only run certain steps 1,2,3 (eg. 1,2 for 1 & 2 only)
+                        Thread count for load/process/save (default=1:2:2) can
+                        be 1:2,2,2:2 for multi-gpu
+  --steps STEPS         If specified only run certain steps 1,2,3 (eg. 1,2 for
+                        1 & 2 only)
+  --video-type VIDEO_TYPE
+                        Video type for output video eg. mp4, webm, mkv
+                        (default=mp4)
   --input-fps INPUT_FPS
                         Manually specify framerate of input video
   --verbose             Print additional info to the commandline
+  --debug               Print debug messages to the commandline
 ```
 
 ## Credits

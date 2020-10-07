@@ -37,8 +37,9 @@ def interpolate_file_mode(input0_file, input1_file, output_file,
 def interpolate_folder_mode(input_folder, output_folder,
                             multiplier=None, tile_size=None, gpuid=None, threads=None):
     """Folder-mode Interpolation"""
+    multiplier = DEFAULT_MULTIPLIER if multiplier is None else int(multiplier)
     # Calculate double input frames as default
-    target_frames = str(len(os.listdir(input_folder) * (DEFAULT_MULTIPLIER if multiplier is None else int(multiplier))))
+    target_frames = str(len(os.listdir(input_folder)) * multiplier)
     # Make sure output_folder exists
     pathlib.Path(output_folder).mkdir(parents=True, exist_ok=True)
     cmd = [locations.DAIN_NCNN_VULKAN_BIN,
@@ -48,5 +49,5 @@ def interpolate_folder_mode(input_folder, output_folder,
            "-t", (DEFAULT_TILESIZE if tile_size is None else tile_size),
            "-g", (DEFAULT_GPUID if gpuid is None else gpuid),
            "-j", (DEFAULT_THREADS if threads is None else threads)]
-    print(" ".join(cmd))
+    logging.info(" ".join(cmd))
     subprocess.run(cmd, cwd=locations.DAIN_NCNN_VULKAN_LOCATION)
