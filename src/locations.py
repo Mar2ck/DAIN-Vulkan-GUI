@@ -52,4 +52,3 @@ elif os.path.isfile(which("ffprobe")) is True:  # Else use the system version
 else:
     FFPROBE_BIN = None
     logging.warning("ffprobe not found")
-

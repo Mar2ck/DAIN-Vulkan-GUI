@@ -9,14 +9,15 @@ This file is the core of the DAIN-Vulkan-GUI project and it's command-line inter
 # Built-in modules
 import argparse
 import json
+import logging
 import os
 import pathlib
 from platform import system
-from shutil import which, rmtree
+import shutil
 import subprocess
 # Local modules
 import locations
-import image_similarity
+# import image_similarity
 
 # Interpolation Defaults
 dainGpuId = "auto"
@@ -25,39 +26,35 @@ dainTileSize = "256"
 cainTileSize = "512"
 
 # Dain-ncnn Process Functions
-def DainVulkanFileModeCommand(input0File, input1File, outputFile, time_step="0.5",
-                              tile_size=dainTileSize, gpu_id=dainGpuId, threads=dainThreads):
+def DainVulkanFileModeCommand(input0File, input1File, outputFile, time_step=None):
     pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
     command = [locations.DAIN_NCNN_VULKAN_BIN, "-0", os.path.abspath(input0File), "-1", os.path.abspath(input1File),
-               "-o", os.path.abspath(outputFile), "-s", time_step, "-t", tile_size, "-g", gpu_id,
-               "-j", threads]
+               "-o", os.path.abspath(outputFile), "-s", time_step, "-t", dainTileSize, "-g", dainGpuId,
+               "-j", dainThreads]
     subprocess.run(command, cwd=locations.DAIN_NCNN_VULKAN_LOCATION)
 
 
-def DainVulkanFolderModeCommand(inputFolder, outputFolder, targetFrames,
-                                tile_size=dainTileSize, gpu_id=dainGpuId, threads=dainThreads):
+def DainVulkanFolderModeCommand(inputFolder, outputFolder, targetFrames):
     if os.path.isdir(outputFolder) is True:  # Delete output folder if it exists already
         print("\"{}\" already exists, deleting".format(outputFolder))
-        rmtree(outputFolder)
+        shutil.rmtree(outputFolder)
     pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True)  # Create outputFolder
     command = [locations.DAIN_NCNN_VULKAN_BIN, "-i", os.path.abspath(inputFolder), "-o", os.path.abspath(outputFolder),
-               "-n", targetFrames, "-t", tile_size, "-g", gpu_id, "-j", threads]
+               "-n", targetFrames, "-t", dainTileSize, "-g", dainGpuId, "-j", dainThreads]
     subprocess.run(command, cwd=locations.DAIN_NCNN_VULKAN_LOCATION)
 
 # Cain-ncnn Process Functions
-def CainVulkanFileModeCommand(input0File, input1File, outputFile,
-                              tile_size=cainTileSize, gpu_id=dainGpuId, threads=dainThreads): # Doesn't support timestep
+def CainVulkanFileModeCommand(input0File, input1File, outputFile): # Doesn't support timestep
     pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
     command = [locations.CAIN_NCNN_VULKAN_BIN, "-0", os.path.abspath(input0File), "-1", os.path.abspath(input1File),
-               "-o", os.path.abspath(outputFile), "-t", tile_size, "-g", gpu_id, "-j", threads]
+               "-o", os.path.abspath(outputFile), "-t", cainTileSize, "-g", dainGpuId, "-j", dainThreads]
     subprocess.run(command, cwd=locations.CAIN_NCNN_VULKAN_LOCATION)
 
 
-def CainVulkanFolderModeCommand(inputFolder, outputFolder,
-                                tile_size=cainTileSize, gpu_id=dainGpuId, threads=dainThreads):
+def CainVulkanFolderModeCommand(inputFolder, outputFolder):
     pathlib.Path(outputFolder).mkdir(parents=True, exist_ok=True)  # Create outputFolder
     command = [locations.CAIN_NCNN_VULKAN_BIN, "-i", os.path.abspath(inputFolder), "-o", os.path.abspath(outputFolder),
-               "-t", tile_size, "-g", gpu_id, "-j", threads]
+               "-t", cainTileSize, "-g", dainGpuId, "-j", dainThreads]
     # print(" ".join(command))
     subprocess.run(command, cwd=locations.CAIN_NCNN_VULKAN_LOCATION)
 
@@ -105,8 +102,8 @@ def FfprobeCollectVideoInfo(inputFile):
 
 def FfprobeCollectFrameInfo(inputFile):
     # ffprobe -show_packets -select_streams v:0 -print_format json -loglevel quiet input.mp4
-    command = [locations.FFPROBE_BIN, "-show_packets", "-select_streams", "v:0", "-print_format", "json", "-loglevel", "quiet",
-               inputFile]
+    command = [locations.FFPROBE_BIN, "-show_packets", "-select_streams", "v:0", "-print_format", "json",
+               "-loglevel", "quiet", inputFile]
     output = subprocess.check_output(command, universal_newlines=True)
     parsedOutput = json.loads(output)["packets"]
     return(parsedOutput)
@@ -137,12 +134,12 @@ def CainFolderMultiplierHandler(inputFolder, outputFolder, multiplier):
             print("Renaming \"{}\" to \"{}\"".format(cainFolderTo, outputFolder))
             if os.path.isdir(outputFolder) is True:
                 print("\"{}\" already exists, deleting".format(outputFolder))
-                rmtree(outputFolder)
+                shutil.rmtree(outputFolder)
             os.rename(cainFolderTo, outputFolder)
             if cainOutputFolders[:-1]:
                 print("Deleting leftover folders:", cainOutputFolders[:-1])
                 for folder in cainOutputFolders[:-1]:
-                    rmtree(folder)
+                    shutil.rmtree(folder)
 
 if __name__ == "__main__":
     # Console arguments
@@ -170,12 +167,20 @@ if __name__ == "__main__":
     ## Debug options
     parser.add_argument("--input-fps", type=float, help="Manually specify framerate of input video")
     parser.add_argument("--verbose", action="store_true", help="Print additional info to the commandline")
+    parser.add_argument("--debug", action="store_true", help="Print debug messages to the commandline")
     args = vars(parser.parse_args())
+
+    # Logging
+    if args["verbose"] is True:
+        logging.basicConfig(level=logging.INFO)
+    if args["debug"] is True:
+        logging.basicConfig(level=logging.DEBUG)
 
     # Print interpolator options to terminal/Override interpolation defaults with arguments if specified
     if args["gpu_id"] is not None:
         dainGpuId = args["gpu_id"]
-    print("GPU Selection:", dainGpuId)
+    logging.info("GPU Selection: \"{}\"".format(dainGpuId))
+
     if args["thread_count"] is not None:
         dainThreads = args["thread_count"]
     print("Threads:", dainThreads)
