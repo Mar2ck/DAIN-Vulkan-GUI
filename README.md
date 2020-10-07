@@ -20,6 +20,7 @@ Linux: `./DAINVulkanCLI" -i "/home/example/Videos/test.mp4" --output-folder "/ho
 
 ### Todo
 * Dynamic frame interpolation (duplicate frames are interpolated)
+* Dynamic 1x mode (framerate stays the same but duplicate frames are replaced with interpolations)
 * Perfect loop (Last frame leads into the first)
 * Framerate-target
 
