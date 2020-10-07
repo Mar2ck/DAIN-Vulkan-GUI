@@ -10,9 +10,9 @@ import subprocess
 import locations
 
 # Interpolation Defaults
-DEFAULT_TIME_STEP = "0.5"
+DEFAULT_TIME_STEP = 0.5
 DEFAULT_MULTIPLIER = 2
-DEFAULT_TILESIZE = "256"
+DEFAULT_TILESIZE = 256
 DEFAULT_GPUID = "auto"
 DEFAULT_THREADS = "1:1:1"
 
@@ -26,8 +26,8 @@ def interpolate_file_mode(input0_file, input1_file, output_file,
            "-0", os.path.abspath(input0_file),
            "-1", os.path.abspath(input1_file),
            "-o", os.path.abspath(output_file),
-           "-s", (DEFAULT_TIME_STEP if time_step is None else time_step),
-           "-t", (DEFAULT_TILESIZE if tile_size is None else tile_size),
+           "-s", str(DEFAULT_TIME_STEP if time_step is None else time_step),
+           "-t", str(DEFAULT_TILESIZE if tile_size is None else tile_size),
            "-g", (DEFAULT_GPUID if gpuid is None else gpuid),
            "-j", (DEFAULT_THREADS if threads is None else threads)]
     logging.info(" ".join(cmd))
@@ -46,7 +46,7 @@ def interpolate_folder_mode(input_folder, output_folder,
            "-i", os.path.abspath(input_folder),
            "-o", os.path.abspath(output_folder),
            "-n", target_frames,
-           "-t", (DEFAULT_TILESIZE if tile_size is None else tile_size),
+           "-t", str(DEFAULT_TILESIZE if tile_size is None else tile_size),
            "-g", (DEFAULT_GPUID if gpuid is None else gpuid),
            "-j", (DEFAULT_THREADS if threads is None else threads)]
     logging.info(" ".join(cmd))
