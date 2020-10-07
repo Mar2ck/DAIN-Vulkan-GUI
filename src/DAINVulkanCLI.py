@@ -26,7 +26,7 @@ dainTileSize = "256"
 cainTileSize = "512"
 
 # Dain-ncnn Process Functions
-def DainVulkanFileModeCommand(input0File, input1File, outputFile, time_step=None):
+def DainVulkanFileModeCommand(input0File, input1File, outputFile, time_step="0.5"):
     pathlib.Path(os.path.dirname(outputFile)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
     command = [locations.DAIN_NCNN_VULKAN_BIN, "-0", os.path.abspath(input0File), "-1", os.path.abspath(input1File),
                "-o", os.path.abspath(outputFile), "-s", time_step, "-t", dainTileSize, "-g", dainGpuId,

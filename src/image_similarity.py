@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """
-This file contains functions for calculating the
-visual difference between images via SSIM. This
-can be used to detect whether video frames
-are duplicates.
+Module for calculating the visual difference
+between images via SSIM. This can be used to
+detect whether video frames are duplicates.
 
 Requires: pillow, SSIM-PIL, progress
 Optional: pyopencl
@@ -66,7 +65,7 @@ if __name__ == "__main__":
     args = vars(parser.parse_args())
     useGpu = not args["disable_gpu"]
     if not ((args["image0"] and args["image1"]) or args["folder"]):
-        parser.error('Requires --image0 and --image1 or --folder')
+        parser.error('Requires either both --image0 and --image1 or --folder')
 
     if (args["image0"] is not None) and (args["image1"] is not None):  # -image0 and -image1
         SSIM = calculate_ssim(args["image0"], args["image1"], useGpu)
