@@ -26,7 +26,7 @@ def extract_frames(input_file, output_folder):  # "Step 1"
 
 
 def encode_frames(input_folder, output_file, framerate):
-    # ffmpeg -framerate 48 -i interpolated_frames/%06d.png output.mp4
+    # ffmpeg -framerate 48 -i interpolated_frames/%06d.png -crf 18 output.mp4
     """Encode a folder of sequentially named frames into a video"""
     pathlib.Path(os.path.dirname(output_file)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
     cmd = [locations.FFMPEG_BIN,

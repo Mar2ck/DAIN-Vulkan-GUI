@@ -31,12 +31,14 @@ FFMPEG = {
     "Darwin": os.path.join(ROOT_DIR, "dependencies", "ffmpeg", "macos", "ffmpeg"),
     "Linux": os.path.join(ROOT_DIR, "dependencies", "ffmpeg", "linux", "ffmpeg")
 }
+FFMPEG_BIN = None
 if os.path.isfile(FFMPEG[system()]) is True:  # Use bundled version first
+    logging.debug("FFmpeg version: bundled")
     FFMPEG_BIN = FFMPEG[system()]
 elif os.path.isfile(which("ffmpeg")) is True:  # Else use the system version
+    logging.debug("FFmpeg version: system")
     FFMPEG_BIN = os.path.normpath(which("ffmpeg"))
 else:
-    FFMPEG_BIN = None
     logging.warning("ffmpeg not found")
 
 # FFprobe binary locations
@@ -45,10 +47,12 @@ FFPROBE = {
     "Darwin": os.path.join(ROOT_DIR, "dependencies", "ffmpeg", "macos", "ffprobe"),
     "Linux": os.path.join(ROOT_DIR, "dependencies", "ffmpeg", "linux", "ffprobe")
 }
+FFPROBE_BIN = None
 if os.path.isfile(FFPROBE[system()]) is True:  # Use bundled version first
+    logging.debug("FFprobe version: bundled")
     FFPROBE_BIN = FFPROBE[system()]
 elif os.path.isfile(which("ffprobe")) is True:  # Else use the system version
+    logging.debug("FFprobe version: system")
     FFPROBE_BIN = os.path.normpath(which("ffprobe"))
 else:
-    FFPROBE_BIN = None
     logging.warning("ffprobe not found")
