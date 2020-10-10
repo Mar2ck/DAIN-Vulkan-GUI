@@ -29,8 +29,6 @@ def analyze_video_stream_metadata(inputFile):
     output = subprocess.check_output(cmd, universal_newlines=True)
     parsedOutput = json.loads(output)["streams"][0]
     return({
-        "width": parsedOutput["width"],
-        "height": parsedOutput["height"],
         "fpsReal": parsedOutput["r_frame_rate"],
         "fpsAverage": parsedOutput["avg_frame_rate"]
     })

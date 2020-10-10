@@ -69,17 +69,14 @@ def delete_similar_images(directory_path, threshold, **kwargs):
 
 if __name__ == "__main__":
     import argparse
-
     parser = argparse.ArgumentParser()
     parser.add_argument("-0", "--image0", help="Path of first image")
     parser.add_argument("-1", "--image1", help="Path of second image")
     parser.add_argument("-f", "--folder", help="Path of directory containing images")
-    parser.add_argument("--delete-threshold", type=float,
-                        help="If specified, deletes images")
-    parser.add_argument("--disable-gpu", action="store_true",
-                        help="Force SSIM calculation to use CPU instead of GPU")
-    parser.add_argument("-p", "--progress", action="store_true",
-                        help="Show progress bar when calculating a directory")
+    parser.add_argument("--delete-threshold", type=float, help="If specified, deletes duplicate images automatically"
+                                                               " based on a similarity percentage (Eg. 0.95)")
+    parser.add_argument("--disable-gpu", action="store_true", help="Force SSIM calculation to use CPU instead of GPU")
+    parser.add_argument("-p", "--progress", action="store_true", help="Show progress bar when calculating a directory")
     args = vars(parser.parse_args())
     useGpu = not args["disable_gpu"]
     if not ((args["image0"] and args["image1"]) or args["folder"]):
