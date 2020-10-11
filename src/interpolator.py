@@ -73,8 +73,7 @@ def interpolate_static(input_folder, output_folder,
     pass
 
 
-def interpolate_dynamic(input_folder, output_folder, original_frame_count,
-                        mulitplier=DEFAULT_MULTIPLIER_DYNAMIC, loop=False, interpolator="dain-ncnn", **kwargs):
+def interpolate_dynamic(input_folder, output_folder, original_frame_count, loop=False, **kwargs):
     """
     Creates a dynamic number of new frames that depends on the length of time between each original frame
     Reads frame position from original file names so removed frames are replaced
@@ -103,6 +102,7 @@ def interpolate_dynamic(input_folder, output_folder, original_frame_count,
                                                        **kwargs)
         print("")
 
+    # Run against all frames except last
     inputFolderFiles = sorted(os.listdir(input_folder))
     for i in range(len(inputFolderFiles)-1):
         dynamic_internal(inputFolderFiles[i], inputFolderFiles[i+1])
@@ -113,5 +113,7 @@ def interpolate_dynamic(input_folder, output_folder, original_frame_count,
         dynamic_internal(inputFolderFiles[-1], inputFolderFiles[0],
                          custom_frame_difference=frameDifferenceToEnd)
     else:  # create duplicates til original frame count met
+        shutil.copyfile(os.path.join(input_folder, inputFolderFiles[-1]),
+                        os.path.join(output_folder, inputFolderFiles[-1]))
         _make_duplicate_frames(os.path.join(input_folder, inputFolderFiles[-1]), output_folder,
                                (frameDifferenceToEnd - 1))
