@@ -203,14 +203,14 @@
             </widget>
            </item>
            <item row="1" column="0">
-            <widget class="QLabel" name="tilesizeLabel">
+            <widget class="QLabel" name="tileSizeLabel">
              <property name="text">
               <string>Tile-Size</string>
              </property>
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLineEdit" name="tilesizeLineEdit">
+            <widget class="QLineEdit" name="tileSizeLineEdit">
              <property name="placeholderText">
               <string>256</string>
              </property>
@@ -284,7 +284,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QPushButton" name="goButton">
+     <widget class="QPushButton" name="executeButton">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
         <horstretch>0</horstretch>
