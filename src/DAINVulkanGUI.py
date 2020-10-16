@@ -31,6 +31,9 @@ class Worker(QRunnable):
     @pyqtSlot()
     def run(self):
         print(self.kwargs)
+        import DAINVulkanCLI
+        DAINVulkanCLI.main(**self.kwargs)
+        print("Done!")
 
 
 class MainWindow(QMainWindow):
@@ -64,14 +67,16 @@ class MainWindow(QMainWindow):
     def worker_execute(self):
         # Required arguments
         if not self.input_file:
-            raise ValueError("Invalid input file")
+            error_popup("Please specify an input file")
+            raise ValueError("Input file not specified")
         if not self.output_dir:
-            raise ValueError("Invalid output folder")
+            error_popup("Please specify an output folder")
+            raise ValueError("Output folder not specified")
 
         kwargs = {
             "input_file": self.input_file,
             "output_folder": self.output_dir,
-            "interpolator": self.engine_combo_box.currentText(),
+            "interpolator_engine": self.engine_combo_box.currentText(),
         }
 
         # Add optional arguments to kwargs only if specified

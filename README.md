@@ -36,35 +36,39 @@ Tiles are used by default which can slow down processing. Using a tilesize that'
 
 ## Help message
 ```
-usage: DAINVulkanCLI.py [-h] -i INPUT_FILE [-o OUTPUT_FILE] -O OUTPUT_FOLDER
+usage: DAINVulkanCLI.py [-h] -i INPUT_FILE -O OUTPUT_FOLDER [-o OUTPUT_FILE]
                         [-m FRAME_MULTIPLIER] [--target-fps TARGET_FPS]
-                        [--interpolator INTERPOLATOR] [-g GPU_ID]
-                        [-t TILESIZE] [-j THREAD_COUNT] [--steps STEPS]
-                        [--video-type VIDEO_TYPE] [--input-fps INPUT_FPS]
-                        [--verbose] [--debug]
+                        [-e INTERPOLATOR_ENGINE]
+                        [--duplicate-auto-delete DUPLICATE_AUTO_DELETE]
+                        [-g GPU_ID] [-t TILE_SIZE] [-j THREADS]
+                        [--steps STEPS] [--video-type VIDEO_TYPE]
+                        [--input-fps INPUT_FPS] [--verbose] [--debug]
 
 optional arguments:
   -h, --help            show this help message and exit
   -i INPUT_FILE, --input-file INPUT_FILE
                         Path to input video
-  -o OUTPUT_FILE, --output-file OUTPUT_FILE
-                        Path to output final video to
   -O OUTPUT_FOLDER, --output-folder OUTPUT_FOLDER
                         Folder to output work to
+  -o OUTPUT_FILE, --output-file OUTPUT_FILE
+                        Path to output final video to
   -m FRAME_MULTIPLIER, --frame-multiplier FRAME_MULTIPLIER
                         Frame multiplier 2x,3x,etc (default=2)
   --target-fps TARGET_FPS
                         [Unimplemented] Calculates frame multiplier based on a
                         target framerate
-  --interpolator INTERPOLATOR
+  -e INTERPOLATOR_ENGINE, --interpolator-engine INTERPOLATOR_ENGINE
                         Pick interpolator: dain-ncnn, cain-ncnn (default=dain-
                         ncnn)
+  --duplicate-auto-delete DUPLICATE_AUTO_DELETE
+                        Based on a percentage (Eg. 0.95) will delete any
+                        frames found to be more similar
   -g GPU_ID, --gpu-id GPU_ID
                         GPU to use (default=auto) can be 0,1,2 for multi-gpu
-  -t TILESIZE, --tilesize TILESIZE
+  -t TILE_SIZE, --tile-size TILE_SIZE
                         Tile size (>=128, default=256) must be multiple of 32,
                         can be 256,256,128 for multi-gpu
-  -j THREAD_COUNT, --thread-count THREAD_COUNT
+  -j THREADS, --threads THREADS
                         Thread count for load/process/save (default=1:2:2) can
                         be 1:2,2,2:2 for multi-gpu
   --steps STEPS         If specified only run certain steps 1,2,3 (eg. 1,2 for
