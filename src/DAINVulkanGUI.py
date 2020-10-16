@@ -7,6 +7,7 @@ import sys
 # Local modules
 import dain_ncnn_vulkan
 import cain_ncnn_vulkan
+import DAINVulkanCLI
 
 # External modules
 from PyQt5 import uic
@@ -31,7 +32,6 @@ class Worker(QRunnable):
     @pyqtSlot()
     def run(self):
         print(self.kwargs)
-        import DAINVulkanCLI
         DAINVulkanCLI.main(**self.kwargs)
         print("Done!")
 

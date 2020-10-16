@@ -37,6 +37,7 @@ Tiles are used by default which can slow down processing. Using a tilesize that'
 ## Help message
 ```
 usage: DAINVulkanCLI.py [-h] -i INPUT_FILE -O OUTPUT_FOLDER [-o OUTPUT_FILE]
+                        [--interpolation-mode INTERPOLATION_MODE]
                         [-m FRAME_MULTIPLIER] [--target-fps TARGET_FPS]
                         [-e INTERPOLATOR_ENGINE]
                         [--duplicate-auto-delete DUPLICATE_AUTO_DELETE]
@@ -52,6 +53,9 @@ optional arguments:
                         Folder to output work to
   -o OUTPUT_FILE, --output-file OUTPUT_FILE
                         Path to output final video to
+  --interpolation-mode INTERPOLATION_MODE
+                        [Unimplemented] Interpolation type (static/dynamic,
+                        default=static)
   -m FRAME_MULTIPLIER, --frame-multiplier FRAME_MULTIPLIER
                         Frame multiplier 2x,3x,etc (default=2)
   --target-fps TARGET_FPS

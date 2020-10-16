@@ -132,6 +132,8 @@ if __name__ == "__main__":
     parser.add_argument("-O", "--output-folder", required=True, help="Folder to output work to")
     parser.add_argument("-o", "--output-file", help="Path to output final video to")
     ## Interpolation options
+    parser.add_argument("--interpolation-mode", default=definitions.DEFAULT_INTERPOLATOR_MODE,
+                        help="[Unimplemented] Interpolation type (static/dynamic, default=static)")
     parser.add_argument("-m", "--frame-multiplier", type=int, default=definitions.DEFAULT_FRAME_MULTIPLIER,
                         help="Frame multiplier 2x,3x,etc (default=2)")
     parser.add_argument("--target-fps", help="[Unimplemented] Calculates frame multiplier based on a target framerate")
