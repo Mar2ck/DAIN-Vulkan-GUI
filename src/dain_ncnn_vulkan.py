@@ -30,12 +30,13 @@ def interpolate_file_mode(input0_file, input1_file, output_file, time_step=DEFAU
            "-t", str(tile_size),
            "-g", gpu_id,
            "-j", threads]
-    logging.info(" ".join(cmd))
+    print(" ".join(cmd))
     subprocess.run(cmd, cwd=definitions.DAIN_NCNN_VULKAN_LOCATION)
 
 
 def interpolate_folder_mode(input_folder, output_folder, multiplier=DEFAULT_MULTIPLIER,
-                            tile_size=DEFAULT_TILE_SIZE, gpu_id=DEFAULT_GPU_ID, threads=DEFAULT_THREADS):
+                            tile_size=DEFAULT_TILE_SIZE, gpu_id=DEFAULT_GPU_ID, threads=DEFAULT_THREADS,
+                            verbose=True):
     """Folder-mode Interpolation"""
     # Calculate double input frames as default
     target_frames = str(len(os.listdir(input_folder)) * int(multiplier))
@@ -48,5 +49,7 @@ def interpolate_folder_mode(input_folder, output_folder, multiplier=DEFAULT_MULT
            "-t", str(tile_size),
            "-g", gpu_id,
            "-j", threads]
-    logging.info(" ".join(cmd))
+    if verbose is True:
+        cmd.append("-v")
+    print(" ".join(cmd))
     subprocess.run(cmd, cwd=definitions.DAIN_NCNN_VULKAN_LOCATION)

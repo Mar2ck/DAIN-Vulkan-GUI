@@ -68,10 +68,10 @@ class MainWindow(QMainWindow):
         # Required arguments
         if not self.input_file:
             error_popup("Please specify an input file")
-            raise ValueError("Input file not specified")
+            return -1
         if not self.output_dir:
             error_popup("Please specify an output folder")
-            raise ValueError("Output folder not specified")
+            return -1
 
         kwargs = {
             "input_file": self.input_file,

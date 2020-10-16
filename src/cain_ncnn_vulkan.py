@@ -30,12 +30,13 @@ def interpolate_file_mode(input0_file, input1_file, output_file,
            "-t", str(tile_size),
            "-g", gpu_id,
            "-j", threads]
-    logging.info(" ".join(cmd))
+    print(" ".join(cmd))
     subprocess.run(cmd, cwd=definitions.CAIN_NCNN_VULKAN_LOCATION)
 
 
 def interpolate_folder_mode(input_folder, output_folder,
-                            tile_size=DEFAULT_TILE_SIZE, gpu_id=DEFAULT_GPU_ID, threads=DEFAULT_THREADS):
+                            tile_size=DEFAULT_TILE_SIZE, gpu_id=DEFAULT_GPU_ID, threads=DEFAULT_THREADS,
+                            verbose=True):
     """Folder-mode Interpolation"""
     # Make sure output_folder exists
     pathlib.Path(output_folder).mkdir(parents=True, exist_ok=True)
@@ -45,5 +46,7 @@ def interpolate_folder_mode(input_folder, output_folder,
            "-t", str(tile_size),
            "-g", gpu_id,
            "-j", threads]
-    logging.info(" ".join(cmd))
+    if verbose is True:
+        cmd.append("-v")
+    print(" ".join(cmd))
     subprocess.run(cmd, cwd=definitions.CAIN_NCNN_VULKAN_LOCATION)
