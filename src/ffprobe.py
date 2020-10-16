@@ -13,13 +13,13 @@ import json
 import logging
 import subprocess
 # Local modules
-import locations
+import definitions
 
 
 def analyze_video_stream_metadata(inputFile):
     """Analyzes a video's stream and returns it's properties"""
     # ffprobe -show_streams -select_streams v:0 -print_format json -loglevel quiet input.mp4
-    cmd = [locations.FFPROBE_BIN,
+    cmd = [definitions.FFPROBE_BIN,
            "-show_streams",
            "-select_streams", "v:0",
            "-print_format", "json",
@@ -37,7 +37,7 @@ def analyze_video_stream_metadata(inputFile):
 def analyze_video_frame_metadata(inputFile):
     """Analyzes a video's frames and returns an array with their individual properities"""
     # ffprobe -show_frames -select_streams v:0 -print_format json -loglevel quiet input.mp4
-    cmd = [locations.FFPROBE_BIN,
+    cmd = [definitions.FFPROBE_BIN,
            "-show_frames",
            "-select_streams", "v:0",
            "-print_format", "json",

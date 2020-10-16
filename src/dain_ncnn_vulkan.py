@@ -7,7 +7,7 @@ import os
 import pathlib
 import subprocess
 # Local modules
-import locations
+import definitions
 
 # Interpolation Defaults
 DEFAULT_TIME_STEP = 0.5
@@ -22,7 +22,7 @@ def interpolate_file_mode(input0_file, input1_file, output_file, time_step=DEFAU
     """File-mode Interpolation"""
     # Make sure parent folder of output_file exists
     pathlib.Path(os.path.dirname(output_file)).mkdir(parents=True, exist_ok=True)
-    cmd = [locations.DAIN_NCNN_VULKAN_BIN,
+    cmd = [definitions.DAIN_NCNN_VULKAN_BIN,
            "-0", os.path.abspath(input0_file),
            "-1", os.path.abspath(input1_file),
            "-o", os.path.abspath(output_file),
@@ -31,7 +31,7 @@ def interpolate_file_mode(input0_file, input1_file, output_file, time_step=DEFAU
            "-g", gpu_id,
            "-j", threads]
     logging.info(" ".join(cmd))
-    subprocess.run(cmd, cwd=locations.DAIN_NCNN_VULKAN_LOCATION)
+    subprocess.run(cmd, cwd=definitions.DAIN_NCNN_VULKAN_LOCATION)
 
 
 def interpolate_folder_mode(input_folder, output_folder, multiplier=DEFAULT_MULTIPLIER,
@@ -41,7 +41,7 @@ def interpolate_folder_mode(input_folder, output_folder, multiplier=DEFAULT_MULT
     target_frames = str(len(os.listdir(input_folder)) * int(multiplier))
     # Make sure output_folder exists
     pathlib.Path(output_folder).mkdir(parents=True, exist_ok=True)
-    cmd = [locations.DAIN_NCNN_VULKAN_BIN,
+    cmd = [definitions.DAIN_NCNN_VULKAN_BIN,
            "-i", os.path.abspath(input_folder),
            "-o", os.path.abspath(output_folder),
            "-n", str(target_frames),
@@ -49,4 +49,4 @@ def interpolate_folder_mode(input_folder, output_folder, multiplier=DEFAULT_MULT
            "-g", gpu_id,
            "-j", threads]
     logging.info(" ".join(cmd))
-    subprocess.run(cmd, cwd=locations.DAIN_NCNN_VULKAN_LOCATION)
+    subprocess.run(cmd, cwd=definitions.DAIN_NCNN_VULKAN_LOCATION)

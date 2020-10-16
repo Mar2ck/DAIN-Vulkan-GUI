@@ -10,7 +10,7 @@ import os
 import pathlib
 import subprocess
 # Local modules
-import locations
+import definitions
 
 # Interpolation Defaults
 DEFAULT_TILE_SIZE = 512
@@ -23,7 +23,7 @@ def interpolate_file_mode(input0_file, input1_file, output_file,
     """File-mode Interpolation"""
     # Make sure parent folder of output_file exists
     pathlib.Path(os.path.dirname(output_file)).mkdir(parents=True, exist_ok=True)
-    cmd = [locations.CAIN_NCNN_VULKAN_BIN,
+    cmd = [definitions.CAIN_NCNN_VULKAN_BIN,
            "-0", os.path.abspath(input0_file),
            "-1", os.path.abspath(input1_file),
            "-o", os.path.abspath(output_file),
@@ -31,7 +31,7 @@ def interpolate_file_mode(input0_file, input1_file, output_file,
            "-g", gpu_id,
            "-j", threads]
     logging.info(" ".join(cmd))
-    subprocess.run(cmd, cwd=locations.CAIN_NCNN_VULKAN_LOCATION)
+    subprocess.run(cmd, cwd=definitions.CAIN_NCNN_VULKAN_LOCATION)
 
 
 def interpolate_folder_mode(input_folder, output_folder,
@@ -39,11 +39,11 @@ def interpolate_folder_mode(input_folder, output_folder,
     """Folder-mode Interpolation"""
     # Make sure output_folder exists
     pathlib.Path(output_folder).mkdir(parents=True, exist_ok=True)
-    cmd = [locations.CAIN_NCNN_VULKAN_BIN,
+    cmd = [definitions.CAIN_NCNN_VULKAN_BIN,
            "-i", os.path.abspath(input_folder),
            "-o", os.path.abspath(output_folder),
            "-t", str(tile_size),
            "-g", gpu_id,
            "-j", threads]
     logging.info(" ".join(cmd))
-    subprocess.run(cmd, cwd=locations.CAIN_NCNN_VULKAN_LOCATION)
+    subprocess.run(cmd, cwd=definitions.CAIN_NCNN_VULKAN_LOCATION)
