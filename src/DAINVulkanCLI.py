@@ -11,6 +11,7 @@ import pathlib
 from platform import system
 
 # Local modules
+import definitions
 import dain_ncnn_vulkan
 # import cain_ncnn_vulkan
 import ffmpeg
@@ -34,13 +35,13 @@ def main(input_file, output_folder, **kwargs):
     print("Interpolator Options:", interpolatorOptions)
 
     # Set defaults for kwargs (argparse adds unused arguements to the dict even if unused)
-    frame_multiplier = 2
+    frame_multiplier = definitions.DEFAULT_FRAME_MULTIPLIER
     if ("frame_multiplier" in kwargs) and (kwargs["frame_multiplier"] is not None):
         frame_multiplier = kwargs["frame_multiplier"]
-    interpolator_engine = "dain-ncnn"
+    interpolator_engine = definitions.DEFAULT_INTERPOLATOR_ENGINE
     if ("interpolator_engine" in kwargs) and (kwargs["interpolator_engine"] is not None):
         interpolator_engine = kwargs["interpolator_engine"]
-    video_type = ".mp4"
+    video_type = definitions.DEFAULT_VIDEO_TYPE
     if ("video_type" in kwargs) and (kwargs["video_type"] is not None):
         video_type = kwargs["video_type"]
 
@@ -131,9 +132,10 @@ if __name__ == "__main__":
     parser.add_argument("-O", "--output-folder", required=True, help="Folder to output work to")
     parser.add_argument("-o", "--output-file", help="Path to output final video to")
     ## Interpolation options
-    parser.add_argument("-m", "--frame-multiplier", type=int, default=2, help="Frame multiplier 2x,3x,etc (default=2)")
+    parser.add_argument("-m", "--frame-multiplier", type=int, default=definitions.DEFAULT_FRAME_MULTIPLIER,
+                        help="Frame multiplier 2x,3x,etc (default=2)")
     parser.add_argument("--target-fps", help="[Unimplemented] Calculates frame multiplier based on a target framerate")
-    parser.add_argument("-e", "--interpolator-engine", default="dain-ncnn",
+    parser.add_argument("-e", "--interpolator-engine", default=definitions.DEFAULT_INTERPOLATOR_ENGINE,
                         help="Pick interpolator: dain-ncnn, cain-ncnn (default=dain-ncnn)")
     parser.add_argument("--duplicate-auto-delete", type=float,
                         help="Based on a percentage (Eg. 0.95) will delete any frames found to be more similar")
@@ -146,7 +148,7 @@ if __name__ == "__main__":
     ## Step options
     parser.add_argument("--steps", help="If specified only run certain steps 1,2,3 (eg. 1,2 for 1 & 2 only)")
     ## Output file options
-    parser.add_argument("--video-type", default="mp4",
+    parser.add_argument("--video-type", default=definitions.DEFAULT_VIDEO_TYPE,
                         help="Video type for output video eg. mp4, webm, mkv (default=mp4)")
     ## Debug options
     parser.add_argument("--input-fps", type=float, help="Manually specify framerate of input video")

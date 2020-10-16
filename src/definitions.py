@@ -56,3 +56,8 @@ elif os.path.isfile(which("ffprobe")) is True:  # Else use the system version
     FFPROBE_BIN = os.path.normpath(which("ffprobe"))
 else:
     logging.warning("ffprobe not found")
+
+# Default parameters
+DEFAULT_FRAME_MULTIPLIER = 2
+DEFAULT_INTERPOLATOR_ENGINE = "dain-ncnn"
+DEFAULT_VIDEO_TYPE = ".mp4"
