@@ -39,7 +39,7 @@ Tiles are used by default which can slow down processing. Using a tilesize that'
 usage: DAINVulkanCLI.py [-h] -i INPUT_FILE -O OUTPUT_FOLDER [-o OUTPUT_FILE]
                         [--interpolation-mode INTERPOLATION_MODE]
                         [-m FRAME_MULTIPLIER] [--target-fps TARGET_FPS]
-                        [-e INTERPOLATOR_ENGINE]
+                        [-e INTERPOLATOR_ENGINE] [--loop-video]
                         [--duplicate-auto-delete DUPLICATE_AUTO_DELETE]
                         [-g GPU_ID] [-t TILE_SIZE] [-j THREADS]
                         [--steps STEPS] [--video-type VIDEO_TYPE]
@@ -52,10 +52,9 @@ optional arguments:
   -O OUTPUT_FOLDER, --output-folder OUTPUT_FOLDER
                         Folder to output work to
   -o OUTPUT_FILE, --output-file OUTPUT_FILE
-                        Path to output final video to
+                        [Unimplemented] Path to output final video to
   --interpolation-mode INTERPOLATION_MODE
-                        [Unimplemented] Interpolation type (static/dynamic,
-                        default=static)
+                        Interpolation type (static/dynamic, default=static)
   -m FRAME_MULTIPLIER, --frame-multiplier FRAME_MULTIPLIER
                         Frame multiplier 2x,3x,etc (default=2)
   --target-fps TARGET_FPS
@@ -64,6 +63,8 @@ optional arguments:
   -e INTERPOLATOR_ENGINE, --interpolator-engine INTERPOLATOR_ENGINE
                         Pick interpolator: dain-ncnn, cain-ncnn (default=dain-
                         ncnn)
+  --loop-video          [Unimplemented] Interpolates video as a loop (last
+                        frame leads into the first)
   --duplicate-auto-delete DUPLICATE_AUTO_DELETE
                         Based on a percentage (Eg. 0.95) will delete any
                         frames found to be more similar

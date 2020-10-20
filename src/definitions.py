@@ -7,6 +7,13 @@ from shutil import which
 # Project root folder
 ROOT_DIR = os.path.dirname(__file__)
 
+# Default parameters
+DEFAULT_FRAME_MULTIPLIER = 2
+DEFAULT_INTERPOLATOR_MODE = "static"
+DEFAULT_INTERPOLATOR_ENGINE = "dain-ncnn"
+DEFAULT_LOOP = False
+DEFAULT_VIDEO_TYPE = "mp4"
+
 # Dain-ncnn-vulkan binary locations
 DAIN_NCNN_VULKAN = {
     "Windows": os.path.join(ROOT_DIR, "dependencies", "dain-ncnn-vulkan", "dain-ncnn-vulkan.exe"),
@@ -56,9 +63,3 @@ elif os.path.isfile(which("ffprobe")) is True:  # Else use the system version
     FFPROBE_BIN = os.path.normpath(which("ffprobe"))
 else:
     logging.warning("ffprobe not found")
-
-# Default parameters
-DEFAULT_FRAME_MULTIPLIER = 2
-DEFAULT_INTERPOLATOR_MODE = "static"
-DEFAULT_INTERPOLATOR_ENGINE = "dain-ncnn"
-DEFAULT_VIDEO_TYPE = ".mp4"

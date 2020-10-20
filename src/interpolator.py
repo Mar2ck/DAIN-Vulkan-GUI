@@ -102,6 +102,9 @@ def interpolate_dynamic(input_folder, output_folder, original_frame_count, loop=
                                                        **kwargs)
         print("")
 
+    # Create output_folder if it doesn't exist
+    pathlib.Path(output_folder).mkdir(parents=True, exist_ok=True)
+
     # Run against all frames except last
     inputFolderFiles = sorted(os.listdir(input_folder))
     for i in range(len(inputFolderFiles)-1):
