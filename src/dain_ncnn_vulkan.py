@@ -2,7 +2,7 @@
 dain-ncnn-vulkan process wrapper
 """
 # Built-in modules
-import logging
+# import logging
 import os
 import pathlib
 import subprocess

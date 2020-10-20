@@ -16,6 +16,7 @@ import dain_ncnn_vulkan
 # import cain_ncnn_vulkan
 import ffmpeg
 import ffprobe
+import video_extract
 import interpolator
 import image_similarity
 
@@ -81,6 +82,8 @@ def main(input_file, output_folder, **kwargs):
     if (stepsSelection is None) or ("1" in stepsSelection):
         print("Step 1: Extracting frames to original_frames")
         ffmpeg.extract_frames(inputFile, folderOriginalFrames)
+        print("Removing alpha layer from original_frames...")
+        video_extract.png_directory_remove_alpha_channel(folderOriginalFrames)
         # folderOriginalFramesExtractedCount = len(sorted(os.listdir(folderOriginalFrames)))
         if ("duplicate_auto_delete" in kwargs) and (kwargs["duplicate_auto_delete"] is not None):
             print("Auto deleting frames with more then {} similarity".format(kwargs["duplicate_auto_delete"]))
