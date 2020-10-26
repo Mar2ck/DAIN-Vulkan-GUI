@@ -75,6 +75,7 @@ def main(input_file, output_folder, **kwargs):
 
     # Setup working folder and predefined output folders
     folderBase = os.path.join(outputFolder, inputFileName)
+    pathlib.Path(folderBase).mkdir(parents=True, exist_ok=True)  # Create base folder at start
     print("Working Directory:", folderBase)
     folderOriginalFrames = os.path.join(folderBase, "original_frames")
     folderInterpolatedFrames = os.path.join(folderBase, "interpolated_frames")
