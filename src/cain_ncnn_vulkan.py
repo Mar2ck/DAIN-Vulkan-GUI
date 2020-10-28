@@ -5,12 +5,13 @@ Cain does not support time-step (aka: always set to "0.5")
 Neither does it support target-frames for the same reason
 """
 # Built-in modules
-# import logging
 import os
 import pathlib
 import subprocess
 # Local modules
 import definitions
+# External modules
+from progress.bar import ShadyBar as progressBar
 
 # Interpolation Defaults
 DEFAULT_TILE_SIZE = 512
@@ -36,8 +37,9 @@ def interpolate_file_mode(input0_file, input1_file, output_file,
 
 def interpolate_folder_mode(input_folder, output_folder,
                             tile_size=DEFAULT_TILE_SIZE, gpu_id=DEFAULT_GPU_ID, threads=DEFAULT_THREADS,
-                            verbose=True):
+                            verbose=False):
     """Folder-mode Interpolation"""
+    target_frames = len(os.listdir(input_folder)) * 2
     # Make sure output_folder exists
     pathlib.Path(output_folder).mkdir(parents=True, exist_ok=True)
     cmd = [definitions.CAIN_NCNN_VULKAN_BIN,
@@ -45,8 +47,30 @@ def interpolate_folder_mode(input_folder, output_folder,
            "-o", os.path.abspath(output_folder),
            "-t", str(tile_size),
            "-g", gpu_id,
-           "-j", threads]
+           "-j", threads,
+           "-v"]
     if verbose is True:
-        cmd.append("-v")
-    print(" ".join(cmd))
-    subprocess.run(cmd, cwd=definitions.CAIN_NCNN_VULKAN_LOCATION)
+        print(" ".join(cmd))
+    # subprocess.run(cmd, cwd=definitions.CAIN_NCNN_VULKAN_LOCATION)
+    progress_bar_created = False
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                          cwd=definitions.CAIN_NCNN_VULKAN_LOCATION, bufsize=1, universal_newlines=True) as process:
+        for line in process.stderr:
+            if line.startswith("["):  # Starting GPU info
+                print(line, end="")
+            elif line.endswith("done\n"):  # Verbose progress output
+                if progress_bar_created is False:
+                    progress_bar_object = progressBar("Progress:", max=target_frames)
+                    progress_bar_created = True
+                progress_bar_object.next()
+            elif line.startswith("invalid tilesize argument"):  # Tilesize error
+                raise ValueError(line.replace("\n", ""))
+            elif line.startswith(("find_blob_index_by_name", "fopen")):  # Model not found error
+                raise OSError("Model not found: {}".format(line.replace("\n", "")))
+            elif line.startswith("vkAllocateMemory failed"):  # VRAM memory error
+                raise RuntimeError("VRAM memory error: {}".format(line.replace("\n", "")))
+            elif line.startswith(("vkWaitForFences failed", "vkQueueSubmit failed")):  # General vulkan error
+                raise RuntimeError("Vulkan error: {}".format(line.replace("\n", "")))
+            else:
+                print(line, end="")
+    progress_bar_object.finish()
