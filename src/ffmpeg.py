@@ -21,6 +21,7 @@ def extract_frames(input_file, output_folder):  # "Step 1"
            "-i", input_file,
            "-loglevel", "error",
            "-vsync", "cfr",
+           "-pix_fmt", "rgb24",  # Usually defaults to rgba which causes alpha problems
            os.path.join(output_folder, "%06d.png")]
     logging.info(" ".join(cmd))
     subprocess.run(cmd)

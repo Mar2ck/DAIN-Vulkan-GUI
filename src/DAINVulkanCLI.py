@@ -18,7 +18,7 @@ import dain_ncnn_vulkan
 # import cain_ncnn_vulkan
 import ffmpeg
 import ffprobe
-import video_extract
+# import video_extract
 import interpolator
 import image_similarity
 
@@ -106,8 +106,8 @@ def main(input_file, output_folder, **kwargs):
             print("Auto-deleting original_frames over {} similarity...".format(kwargs["duplicate_auto_delete"]))
             image_similarity.delete_similar_images(folderOriginalFrames, kwargs["duplicate_auto_delete"])
 
-        print("Removing alpha layer from original_frames...")
-        video_extract.png_directory_remove_alpha_channel(folderOriginalFrames)
+        # print("Removing alpha layer from original_frames...")
+        # video_extract.png_directory_remove_alpha_channel(folderOriginalFrames)
 
     print("original_frames count:", len(os.listdir(folderOriginalFrames)))
 
