@@ -16,7 +16,7 @@ import subprocess
 import definitions
 
 
-def analyze_video_stream_metadata(inputFile):
+def analyze_video_stream_metadata(input_file):
     """Analyzes a video's stream and returns it's properties"""
     # ffprobe -show_streams -select_streams v:0 -print_format json -loglevel quiet input.mp4
     cmd = [definitions.FFPROBE_BIN,
@@ -24,17 +24,17 @@ def analyze_video_stream_metadata(inputFile):
            "-select_streams", "v:0",
            "-print_format", "json",
            "-loglevel", "quiet",
-           inputFile]
+           input_file]
     logging.info(" ".join(cmd))
     output = subprocess.check_output(cmd, universal_newlines=True)
-    parsedOutput = json.loads(output)["streams"][0]
+    parsed_output = json.loads(output)["streams"][0]
     return({
-        "fpsReal": parsedOutput["r_frame_rate"],
-        "fpsAverage": parsedOutput["avg_frame_rate"]
+        "fpsReal": parsed_output["r_frame_rate"],
+        "fpsAverage": parsed_output["avg_frame_rate"]
     })
 
 
-def analyze_video_frame_metadata(inputFile):
+def analyze_video_frame_metadata(input_file):
     """Analyzes a video's frames and returns an array with their individual properities"""
     # ffprobe -show_frames -select_streams v:0 -print_format json -loglevel quiet input.mp4
     cmd = [definitions.FFPROBE_BIN,
@@ -42,8 +42,8 @@ def analyze_video_frame_metadata(inputFile):
            "-select_streams", "v:0",
            "-print_format", "json",
            "-loglevel", "quiet",
-           inputFile]
+           input_file]
     logging.info(" ".join(cmd))
     output = subprocess.check_output(cmd, universal_newlines=True)
-    parsedOutput = json.loads(output)["packets"]
+    parsedOutput = json.loads(output)["frames"]
     return parsedOutput
