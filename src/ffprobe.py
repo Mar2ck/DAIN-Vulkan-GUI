@@ -17,11 +17,13 @@ import definitions
 
 
 def analyze_video_stream_metadata(input_file):
-    """Analyzes a video's stream and returns it's properties"""
-    # ffprobe -show_streams -select_streams v:0 -print_format json -loglevel quiet input.mp4
+    """Analyzes a video's stream and returns it's properties
+    `ffprobe -show_streams -select_streams v:0 -count_packets -print_format json -loglevel quiet input.mp4`
+    """
     cmd = [definitions.FFPROBE_BIN,
            "-show_streams",
            "-select_streams", "v:0",
+           "-count_packets",
            "-print_format", "json",
            "-loglevel", "quiet",
            input_file]
@@ -30,13 +32,15 @@ def analyze_video_stream_metadata(input_file):
     parsed_output = json.loads(output)["streams"][0]
     return({
         "fpsReal": parsed_output["r_frame_rate"],
-        "fpsAverage": parsed_output["avg_frame_rate"]
+        "fpsAverage": parsed_output["avg_frame_rate"],
+        "packetCount": parsed_output["nb_read_packets"]  # Unreliable if video is vfr
     })
 
 
 def analyze_video_frame_metadata(input_file):
-    """Analyzes a video's frames and returns an array with their individual properities"""
-    # ffprobe -show_frames -select_streams v:0 -print_format json -loglevel quiet input.mp4
+    """Analyzes a video's frames and returns an array with their individual properities
+    `ffprobe -show_frames -select_streams v:0 -print_format json -loglevel quiet input.mp4`
+    """
     cmd = [definitions.FFPROBE_BIN,
            "-show_frames",
            "-select_streams", "v:0",

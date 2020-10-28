@@ -30,7 +30,7 @@ def interpolate_file_mode(input0_file, input1_file, output_file, time_step=DEFAU
            "-o", os.path.abspath(output_file),
            "-s", str(time_step),
            "-t", str(tile_size),
-           "-g", gpu_id,
+           "-g", str(gpu_id),
            "-j", threads]
     print(" ".join(cmd))
     subprocess.run(cmd, cwd=definitions.DAIN_NCNN_VULKAN_LOCATION)
@@ -49,7 +49,7 @@ def interpolate_folder_mode(input_folder, output_folder, multiplier=DEFAULT_MULT
            "-o", os.path.abspath(output_folder),
            "-n", str(target_frames),
            "-t", str(tile_size),
-           "-g", gpu_id,
+           "-g", str(gpu_id),
            "-j", threads,
            "-v"]
     if verbose is True:
