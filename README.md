@@ -8,21 +8,19 @@ Windows: `.\DAINVulkanCLI.exe -i "C:\Users\example\Videos\test.mp4" --output-fol
 
 Linux: `./DAINVulkanCLI" -i "/home/example/Videos/test.mp4" --output-folder "/home/example/Videos/DainFolder"`
 
-## Errors
-"vkQueueSubmit failed" and "vkAllocateMemory failed" happens when there isn't enough VRAM for the current frame. Use a lower tile size or downscale the video. 
-
 ## Features
 * Static frame interpolation
 * Dain-ncnn: 2x, 3x, 4x, 5x, etc. Multiplier-target
 * Cain-ncnn: 2x, 4x, 8x, etc. Multiplier-target
 * Multi-threading (-j)
 * Multi-gpu (-g)
+* Dynamic frame interpolation (duplicate frames are interpolated)
+* Dynamic 1x mode (framerate stays the same, duplicate frames are replaced with interpolations)
 
 ### Todo
-* Dynamic frame interpolation (duplicate frames are interpolated)
-* Dynamic 1x mode (framerate stays the same but duplicate frames are replaced with interpolations)
 * Perfect loop (Last frame leads into the first)
 * Framerate-target
+* Slow-mo mode (framerate stays the same, video is slowed down via interpolation)
 
 ### Needs to be fixed by Dain-ncnn author
 * Tiles don't overlap (artifacting when using tiles)
@@ -33,6 +31,9 @@ Linux: `./DAINVulkanCLI" -i "/home/example/Videos/test.mp4" --output-folder "/ho
 The program can be set to process two frames at once (`-j 1:2:2`). This allows for the GPU to be used almost 100% of the time instead of pausing everytime a frame needs to be saved/loaded which gives a very slight speed increase. The downside however is that two frames will be in memory at once so a lower tile size will be needed if there isn't enough VRAM.  
 
 Tiles are used by default which can slow down processing. Using a tilesize that's equal to or bigger then the video's resolution will disable tiles and process the frame all at once. Eg. 720p = 1280x720 so use `-t 1280`
+
+## Errors
+"vkQueueSubmit failed" and "vkAllocateMemory failed" happens when there isn't enough VRAM for the current frame. Use a lower tile size or downscale the video. 
 
 ## Help message
 ```
@@ -88,8 +89,9 @@ optional arguments:
 ```
 
 ## Credits
-https://github.com/nihui/dain-ncnn-vulkan Interpolation program that this project is a wrapper for
+Interpolation programs that this project is a wrapper for:
+* https://github.com/nihui/dain-ncnn-vulkan 
+* https://github.com/nihui/cain-ncnn-vulkan
 
-https://github.com/nihui/cain-ncnn-vulkan
-
-https://ffmpeg.org/ All in one program for video decoding/encoding
+All in one program for video decoding/encoding:
+* https://ffmpeg.org/ 

@@ -2,7 +2,6 @@
 Module for handling video frame extraction (aka: "step 1")
 """
 # Built-in modules
-import os
 import pathlib
 # External modules
 from PIL import Image

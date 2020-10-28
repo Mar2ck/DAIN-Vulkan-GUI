@@ -38,6 +38,7 @@ def encode_frames(input_folder, output_file, framerate):
            "-framerate", str(framerate),
            "-i", os.path.join(input_folder, "%06d.png"),
            "-crf", "18",
+           "-pix_fmt", "yuv420p",
            "-y", "-loglevel", "error",
            output_file]
     logging.info(" ".join(cmd))
