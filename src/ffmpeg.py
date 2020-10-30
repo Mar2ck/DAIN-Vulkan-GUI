@@ -55,8 +55,9 @@ def encode_frames(input_folder, output_file, framerate, verbose=False):
     """Encode a folder of sequentially named frames into a video
     `ffmpeg -framerate 48 -i interpolated_frames/%06d.png -crf 18 output.mp4`
     """
-    frames_count = len(os.listdir(input_folder))
     # TODO add an option for changing quality
+    # TODO add audio passthrough from the source video
+    frames_count = len(os.listdir(input_folder))
     pathlib.Path(os.path.dirname(output_file)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
     cmd = [definitions.FFMPEG_BIN,
            "-framerate", str(framerate),
