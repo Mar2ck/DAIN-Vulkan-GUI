@@ -46,7 +46,7 @@ def extract_frames(input_file, output_folder, verbose=False):
                               bufsize=1, universal_newlines=True) as process:
             for line in process.stderr:
                 if line.startswith("frame="):
-                    frame_count = int(re.findall(r"frame=(.+?)fps=", line)[0])  # Finds number between "frame=" and "fps="
+                    frame_count = int(re.findall(r"frame=(.+?)fps=", line)[0])  # Parses inbetween "frame=" and "fps="
                     progress_bar_object.goto(frame_count)
         progress_bar_object.finish()
 
@@ -63,7 +63,6 @@ def encode_frames(input_folder, output_file, framerate, verbose=False):
            "-framerate", str(framerate),
            "-i", os.path.join(input_folder, "%06d.png"),
            "-crf", "18",
-           "-pix_fmt", "yuv420p",
            "-y",  # Always write file
            output_file]
     if verbose is True:
@@ -76,4 +75,6 @@ def encode_frames(input_folder, output_file, framerate, verbose=False):
             if line.startswith("frame="):
                 frame_count = int(re.findall(r"frame=(.+?)fps=", line)[0])  # Finds number between "frame=" and "fps="
                 progress_bar_object.goto(frame_count)
+            else:
+                print(line, end="")
     progress_bar_object.finish()
