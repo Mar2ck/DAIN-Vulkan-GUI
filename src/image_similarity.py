@@ -14,7 +14,7 @@ import pathlib
 # External modules
 from PIL import Image
 from SSIM_PIL import compare_ssim
-from progress.bar import ShadyBar as progressBar
+from alive_progress import alive_bar
 
 DEFAULT_USE_GPU = True
 DEFAULT_SHOW_PROGRESS = False
@@ -31,7 +31,7 @@ def calculate_ssim(image0_path, image1_path, use_gpu=True, resize_before_compari
     return compare_ssim(image0, image1, GPU=use_gpu)
 
 
-def calculate_directory_ssim(directory_path, show_progress=False, **kwargs):
+def calculate_directory_ssim(directory_path, **kwargs):
     """Calculates the SSIM for every image in a directory
     based on it and the image that precedes it
     """
@@ -45,16 +45,12 @@ def calculate_directory_ssim(directory_path, show_progress=False, **kwargs):
     directory_files.sort()
     # print(directory_files)
     directory_files_ssim = {}
-    if show_progress is True:
-        progress_bar_object = progressBar("Progress:", max=len(directory_files) - 1)
-    for i in range(1, len(directory_files)):
-        file_ssim = calculate_ssim(directory_files[i], directory_files[i - 1], **kwargs)
-        # print(file_ssim)
-        directory_files_ssim[directory_files[i]] = file_ssim
-        if show_progress is True:
-            progress_bar_object.next()
-    if show_progress is True:
-        progress_bar_object.finish()
+    with alive_bar(len(directory_files) - 1, enrich_print=False) as bar:
+        for i in range(1, len(directory_files)):
+            file_ssim = calculate_ssim(directory_files[i], directory_files[i - 1], **kwargs)
+            # print(file_ssim)
+            directory_files_ssim[directory_files[i]] = file_ssim
+            bar()
     return directory_files_ssim
 
 
@@ -76,7 +72,6 @@ if __name__ == "__main__":
     parser.add_argument("--delete-threshold", type=float, help="If specified, deletes duplicate images automatically"
                                                                " based on a similarity percentage (Eg. 0.95)")
     parser.add_argument("--disable-gpu", action="store_true", help="Force SSIM calculation to use CPU instead of GPU")
-    parser.add_argument("-p", "--progress", action="store_true", help="Show progress bar when calculating a directory")
     args = vars(parser.parse_args())
     useGpu = not args["disable_gpu"]
     if not ((args["image0"] and args["image1"]) or args["folder"]):
@@ -86,8 +81,8 @@ if __name__ == "__main__":
         SSIM = calculate_ssim(args["image0"], args["image1"], use_gpu=useGpu)
         print("SSIM: {}".format(SSIM)) # -folder delete mode
     elif (args["folder"] is not None) and (args["delete_threshold"] is not None):
-        delete_similar_images(args["folder"], args["delete_threshold"], use_gpu=useGpu, show_progress=args["progress"])
+        delete_similar_images(args["folder"], args["delete_threshold"], use_gpu=useGpu)
     elif args["folder"] is not None:  # -folder
-        directorySSIM = calculate_directory_ssim(args["folder"], use_gpu=useGpu, show_progress=args["progress"])
+        directorySSIM = calculate_directory_ssim(args["folder"], use_gpu=useGpu)
         for file in sorted(directorySSIM.keys()):
             print("{}: {}".format(file, directorySSIM[file]))

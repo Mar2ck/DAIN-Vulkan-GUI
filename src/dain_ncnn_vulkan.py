@@ -9,7 +9,7 @@ import subprocess
 # Local modules
 import definitions
 # External modules
-from progress.bar import ShadyBar as progressBar
+from alive_progress import alive_bar
 
 # Interpolation Defaults
 DEFAULT_TIME_STEP = 0.5
@@ -55,25 +55,21 @@ def interpolate_folder_mode(input_folder, output_folder, multiplier=DEFAULT_MULT
     if verbose is True:
         print(" ".join(cmd))
     # subprocess.run(cmd, cwd=definitions.DAIN_NCNN_VULKAN_LOCATION)
-    progress_bar_created = False
-    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                          cwd=definitions.DAIN_NCNN_VULKAN_LOCATION, bufsize=1, universal_newlines=True) as process:
-        for line in process.stderr:
-            if line.startswith("["):  # Starting GPU info
-                print(line, end="")
-            elif line.endswith("done\n"):  # Verbose progress output
-                if progress_bar_created is False:
-                    progress_bar_object = progressBar("Progress:", max=target_frames)
-                    progress_bar_created = True
-                progress_bar_object.next()
-            elif line.startswith("invalid tilesize argument"):  # Tilesize error
-                raise ValueError(line.replace("\n", ""))
-            elif line.startswith(("find_blob_index_by_name", "fopen")):  # Model not found error
-                raise OSError("Model not found: {}".format(line.replace("\n", "")))
-            elif line.startswith("vkAllocateMemory failed"):  # VRAM memory error
-                raise RuntimeError("VRAM memory error: {}".format(line.replace("\n", "")))
-            elif line.startswith(("vkWaitForFences failed", "vkQueueSubmit failed")):  # General vulkan error
-                raise RuntimeError("Vulkan error: {}".format(line.replace("\n", "")))
-            else:
-                print(line, end="")
-    progress_bar_object.finish()
+    with alive_bar(target_frames, enrich_print=False) as bar:
+        with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              cwd=definitions.DAIN_NCNN_VULKAN_LOCATION, bufsize=1, universal_newlines=True) as process:
+            for line in process.stderr:
+                if line.startswith("["):  # Starting GPU info
+                    print(line, end="")
+                elif line.endswith("done\n"):  # Verbose progress output
+                    bar()
+                elif line.startswith("invalid tilesize argument"):  # Tilesize error
+                    raise ValueError(line.replace("\n", ""))
+                elif line.startswith(("find_blob_index_by_name", "fopen")):  # Model not found error
+                    raise OSError("Model not found: {}".format(line.replace("\n", "")))
+                elif line.startswith("vkAllocateMemory failed"):  # VRAM memory error
+                    raise RuntimeError("VRAM memory error: {}".format(line.replace("\n", "")))
+                elif line.startswith(("vkWaitForFences failed", "vkQueueSubmit failed")):  # General vulkan error
+                    raise RuntimeError("Vulkan error: {}".format(line.replace("\n", "")))
+                else:
+                    print(line, end="")

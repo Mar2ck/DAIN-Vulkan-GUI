@@ -11,7 +11,7 @@ import subprocess
 import definitions
 import ffprobe
 # External modules
-from progress.bar import ShadyBar as progressBar
+from alive_progress import alive_bar
 
 
 def extract_frames(input_file, output_folder, verbose=False):
@@ -41,14 +41,18 @@ def extract_frames(input_file, output_folder, verbose=False):
                 if line.startswith("frame="):
                     print(line, end="")
     else:
-        progress_bar_object = progressBar("Progress:", max=frame_count)
-        with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                              bufsize=1, universal_newlines=True) as process:
-            for line in process.stderr:
-                if line.startswith("frame="):
-                    frame_count = int(re.findall(r"frame=(.+?)fps=", line)[0])  # Parses inbetween "frame=" and "fps="
-                    progress_bar_object.goto(frame_count)
-        progress_bar_object.finish()
+        with alive_bar(frame_count, enrich_print=False) as bar:
+            frame_count_processed_last = 0
+            with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                  bufsize=1, universal_newlines=True) as process:
+                for line in process.stderr:
+                    if line.startswith("frame="):
+                        # Parses inbetween "frame=" and "fps="
+                        frame_count_processed = int(re.findall(r"frame=(.+?)fps=", line)[0])
+                        bar(incr=(frame_count_processed - frame_count_processed_last))
+                        frame_count_processed_last = frame_count_processed
+                    else:
+                        print(line, end="")
 
 
 def encode_frames(input_folder, output_file, framerate, verbose=False):
@@ -57,7 +61,7 @@ def encode_frames(input_folder, output_file, framerate, verbose=False):
     """
     # TODO add an option for changing quality
     # TODO add audio passthrough from the source video
-    frames_count = len(os.listdir(input_folder))
+    frame_count = len(os.listdir(input_folder))
     pathlib.Path(os.path.dirname(output_file)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
     cmd = [definitions.FFMPEG_BIN,
            "-framerate", str(framerate),
@@ -68,13 +72,15 @@ def encode_frames(input_folder, output_file, framerate, verbose=False):
     if verbose is True:
         print(" ".join(cmd))
     # subprocess.run(cmd)
-    progress_bar_object = progressBar("Progress:", max=frames_count)
-    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                          bufsize=1, universal_newlines=True) as process:
-        for line in process.stderr:
-            if line.startswith("frame="):
-                frame_count = int(re.findall(r"frame=(.+?)fps=", line)[0])  # Finds number between "frame=" and "fps="
-                progress_bar_object.goto(frame_count)
-            else:
-                print(line, end="")
-    progress_bar_object.finish()
+    with alive_bar(frame_count, enrich_print=False) as bar:
+        frame_count_processed_last = 0
+        with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              bufsize=1, universal_newlines=True) as process:
+            for line in process.stderr:
+                if line.startswith("frame="):
+                    # Parses inbetween "frame=" and "fps="
+                    frame_count_processed = int(re.findall(r"frame=(.+?)fps=", line)[0])
+                    bar(incr=(frame_count_processed - frame_count_processed_last))
+                    frame_count_processed_last = frame_count_processed
+                else:
+                    print(line, end="")
