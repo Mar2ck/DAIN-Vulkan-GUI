@@ -7,6 +7,7 @@ Neither does it support target-frames for the same reason
 # Built-in modules
 import os
 import pathlib
+import shutil
 import subprocess
 # Local modules
 import definitions
@@ -40,8 +41,11 @@ def interpolate_folder_mode(input_folder, output_folder,
                             verbose=False):
     """Folder-mode Interpolation"""
     target_frames = len(os.listdir(input_folder)) * 2
-    # Make sure output_folder exists
-    pathlib.Path(output_folder).mkdir(parents=True, exist_ok=True)
+
+    if os.path.isdir(output_folder):  # Delete output_folder if it exists to avoid conflicts
+        shutil.rmtree(output_folder)
+    pathlib.Path(output_folder).mkdir(parents=True, exist_ok=True)  # Create output_folder
+
     cmd = [definitions.CAIN_NCNN_VULKAN_BIN,
            "-i", os.path.abspath(input_folder),
            "-o", os.path.abspath(output_folder),
