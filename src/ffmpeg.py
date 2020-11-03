@@ -51,7 +51,7 @@ def extract_frames(input_file, output_folder, verbose=False):
                         frame_count_processed = int(re.findall(r"frame=(.+?)fps=", line)[0])
                         bar(incr=(frame_count_processed - frame_count_processed_last))
                         frame_count_processed_last = frame_count_processed
-                    else:
+                    elif verbose is True:
                         print(line, end="")
 
 
@@ -82,5 +82,5 @@ def encode_frames(input_folder, output_file, framerate, verbose=False):
                     frame_count_processed = int(re.findall(r"frame=(.+?)fps=", line)[0])
                     bar(incr=(frame_count_processed - frame_count_processed_last))
                     frame_count_processed_last = frame_count_processed
-                else:
+                elif verbose is True:
                     print(line, end="")

@@ -7,6 +7,7 @@ AI-Powered video interpolater (eg. 30fps -> 60fps) for Vulkan devices. Based on 
 import argparse
 import json
 import logging
+import math
 import os
 import pathlib
 from platform import system
@@ -28,9 +29,6 @@ def main(input_file, output_folder, **kwargs):
     print("Platform:", system())
 
     # Set defaults for kwargs (argparse adds unused arguements to the dict even if unused)
-    frame_multiplier = definitions.DEFAULT_FRAME_MULTIPLIER
-    if ("frame_multiplier" in kwargs) and (kwargs["frame_multiplier"] is not None):
-        frame_multiplier = kwargs["frame_multiplier"]
     interpolator_engine = definitions.DEFAULT_INTERPOLATOR_ENGINE
     if ("interpolator_engine" in kwargs) and (kwargs["interpolator_engine"] is not None):
         interpolator_engine = kwargs["interpolator_engine"]
@@ -72,6 +70,23 @@ def main(input_file, output_folder, **kwargs):
         print(inputFileProperties)
         fracNum, fracDenom = inputFileProperties["fpsReal"].split("/")
         inputFileFps = int(fracNum) / int(fracDenom)
+        print("Video fps:", inputFileFps)
+
+    # Calculate multiplier if not specified
+    frame_multiplier = definitions.DEFAULT_FRAME_MULTIPLIER
+    if ("frame_multiplier" in kwargs) and (kwargs["frame_multiplier"] is not None):
+        # Frame mutiplier is defined
+        frame_multiplier = kwargs["frame_multiplier"]
+    elif ("target_fps" in kwargs) and (kwargs["target_fps"] is not None):
+        # Frame mutiplier is calculated from target_fps
+        frame_multiplier_precise = int(kwargs["target_fps"])/inputFileFps
+        if interpolator_engine.startswith("dain-ncnn"):
+            # Round up
+            frame_multiplier = math.ceil(frame_multiplier_precise)
+        elif interpolator_engine.startswith("cain-ncnn"):
+            # Round up to next power of 2
+            frame_multiplier = 2 ** (int(float(frame_multiplier_precise).hex().split('p+')[1]) + 1)
+    print("Multiplier:", frame_multiplier)
 
     # Setup working folder and predefined output folders
     folderBase = os.path.join(outputFolder, inputFileName)
@@ -174,6 +189,10 @@ def main(input_file, output_folder, **kwargs):
     # Write info to json at the end
     json.dump(infoJsonFile, open(infoJsonFilePath, "w"))
 
+    if ("delete_output_folder" in kwargs) and (kwargs["delete_output_folder"] is True):
+        print("Deleting working directory...")
+        shutil.rmtree(folderBase)
+
 
 if __name__ == "__main__":
     # Console arguments
@@ -181,13 +200,15 @@ if __name__ == "__main__":
     # Path options
     parser.add_argument("-i", "--input-file", required=True, help="Path to input video")
     parser.add_argument("-O", "--output-folder", required=True, help="Folder to output work to")
-    parser.add_argument("-o", "--output-file", help="Path to output final video to")
+    parser.add_argument("-o", "--output-file", help="Path to copy final video to (can be directory or file path)")
+    parser.add_argument("--delete-output-folder", action="store_true",
+                        help="Delete output folder at the end, intended to be used with --output-file")
     # Interpolation options
     parser.add_argument("--interpolation-mode", default=definitions.DEFAULT_INTERPOLATOR_MODE,
                         help="Interpolation type (static/dynamic, default=static)")
-    parser.add_argument("-m", "--frame-multiplier", type=int, default=definitions.DEFAULT_FRAME_MULTIPLIER,
+    parser.add_argument("-m", "--frame-multiplier", type=int,
                         help="Frame multiplier 2x,3x,etc (default=2)")
-    parser.add_argument("--target-fps", help="[Unimplemented] Calculates frame multiplier based on a target framerate")
+    parser.add_argument("--target-fps", help="Calculates frame multiplier based on a target framerate")
     parser.add_argument("-e", "--interpolator-engine", default=definitions.DEFAULT_INTERPOLATOR_ENGINE,
                         help="Pick interpolator: dain-ncnn, cain-ncnn (default=dain-ncnn)")
     parser.add_argument("--loop-video", action="store_true",
