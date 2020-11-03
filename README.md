@@ -38,9 +38,8 @@ Tiles are used by default which can slow down processing. Using a tilesize that'
 ## Help message
 ```
 usage: DAINVulkanCLI.py [-h] -i INPUT_FILE -O OUTPUT_FOLDER [-o OUTPUT_FILE]
-                        [--delete-output-folder]
-                        [--interpolation-mode INTERPOLATION_MODE]
-                        [-m FRAME_MULTIPLIER] [--target-fps TARGET_FPS]
+                        [--delete-output-folder] [-m INTERPOLATION_MODE]
+                        [-x FRAME_MULTIPLIER] [--target-fps TARGET_FPS]
                         [-e INTERPOLATOR_ENGINE] [--loop-video]
                         [--duplicate-auto-delete DUPLICATE_AUTO_DELETE]
                         [-g GPU_ID] [-t TILE_SIZE] [-j THREADS]
@@ -60,9 +59,9 @@ optional arguments:
   --delete-output-folder
                         Delete output folder at the end, intended to be used
                         with --output-file
-  --interpolation-mode INTERPOLATION_MODE
+  -m INTERPOLATION_MODE, --interpolation-mode INTERPOLATION_MODE
                         Interpolation type (static/dynamic, default=static)
-  -m FRAME_MULTIPLIER, --frame-multiplier FRAME_MULTIPLIER
+  -x FRAME_MULTIPLIER, --frame-multiplier FRAME_MULTIPLIER
                         Frame multiplier 2x,3x,etc (default=2)
   --target-fps TARGET_FPS
                         Calculates frame multiplier based on a target

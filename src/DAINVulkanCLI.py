@@ -204,9 +204,9 @@ if __name__ == "__main__":
     parser.add_argument("--delete-output-folder", action="store_true",
                         help="Delete output folder at the end, intended to be used with --output-file")
     # Interpolation options
-    parser.add_argument("--interpolation-mode", default=definitions.DEFAULT_INTERPOLATOR_MODE,
+    parser.add_argument("-m", "--interpolation-mode", default=definitions.DEFAULT_INTERPOLATOR_MODE,
                         help="Interpolation type (static/dynamic, default=static)")
-    parser.add_argument("-m", "--frame-multiplier", type=int,
+    parser.add_argument("-x", "--frame-multiplier", type=int,
                         help="Frame multiplier 2x,3x,etc (default=2)")
     parser.add_argument("--target-fps", help="Calculates frame multiplier based on a target framerate")
     parser.add_argument("-e", "--interpolator-engine", default=definitions.DEFAULT_INTERPOLATOR_ENGINE,
