@@ -156,10 +156,20 @@ def main(input_file, output_folder, **kwargs):
     # Step 3: Interpolated Frames -> Output Video
     if (stepsSelection is None) or ("3" in stepsSelection):
         print("\nStep 3: Extracting frames to output_videos")
+        outputFile = os.path.join(folderOutputVideos, inputFileName + "".join(infoJsonFile["outputSuffixes"]) +
+                                  "." + video_type)
         ffmpeg.encode_frames(folderInterpolatedFrames,
-                             os.path.join(folderOutputVideos, inputFileName + "".join(infoJsonFile["outputSuffixes"]) +
-                                          "." + video_type),
+                             outputFile,
                              str(inputFileFps * frame_multiplier))
+
+        if ("copy_mtime" in kwargs) and (kwargs["copy_mtime"] is True):  # Copy mtime to output
+            print("Copying mtime to output...")
+            inputFileModifiedTime = os.path.getmtime(inputFile)
+            os.utime(outputFile, (inputFileModifiedTime, inputFileModifiedTime))
+
+        if ("output_file" in kwargs) and (kwargs["output_file"] is not None):  # Copy output file to destination
+            print("Copying output file to --output-file...")
+            shutil.copy2(outputFile, os.path.dirname(inputFile))
 
     # Write info to json at the end
     json.dump(infoJsonFile, open(infoJsonFilePath, "w"))
@@ -171,7 +181,7 @@ if __name__ == "__main__":
     # Path options
     parser.add_argument("-i", "--input-file", required=True, help="Path to input video")
     parser.add_argument("-O", "--output-folder", required=True, help="Folder to output work to")
-    parser.add_argument("-o", "--output-file", help="[Unimplemented] Path to output final video to")
+    parser.add_argument("-o", "--output-file", help="Path to output final video to")
     # Interpolation options
     parser.add_argument("--interpolation-mode", default=definitions.DEFAULT_INTERPOLATOR_MODE,
                         help="Interpolation type (static/dynamic, default=static)")
@@ -195,6 +205,7 @@ if __name__ == "__main__":
     # Output file options
     parser.add_argument("--video-type", default=definitions.DEFAULT_VIDEO_TYPE,
                         help="Video type for output video eg. mp4, webm, mkv (default=mp4)")
+    parser.add_argument("--copy-mtime", action="store_true", help="Copy the modified timestamp to output")
     # Debug options
     parser.add_argument("--input-fps", type=float, help="Manually specify framerate of input video")
     parser.add_argument("--verbose", action="store_true", help="Print additional info to the commandline")
