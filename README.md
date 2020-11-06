@@ -3,10 +3,16 @@ AI-Powered video interpolater (eg. 30fps -> 60fps) for Vulkan devices. Based on 
 
 WIP Software so expect bugs, GUI soon™
 
+## Download
+Windows | Linux | Google Colab
+:-: | :-: | :-:
+[![windows](https://i.imgur.com/tJlPSeC.png "Windows")](https://github.com/Mar2ck/DAIN-Vulkan-GUI/releases) | [![linux](https://i.imgur.com/76C8KZs.png "Linux")](https://github.com/Mar2ck/DAIN-Vulkan-GUI/releases) | [![colab](https://i.imgur.com/9bU9G1D.png "Google Colab")](https://colab.research.google.com/github/Mar2ck/DAIN-Vulkan-GUI/blob/master/DAINVulkanCLI-Colab.ipynb)
+
+
 ## Usage
 Windows: `.\DAINVulkanCLI.exe -i "C:\Users\example\Videos\test.mp4" --output-folder "C:\Users\example\Videos\DainFolder"`
 
-Linux: `./DAINVulkanCLI" -i "/home/example/Videos/test.mp4" --output-folder "/home/example/Videos/DainFolder"`
+Linux: `./DAINVulkanCLI -i "/home/example/Videos/test.mp4" --output-folder "/home/example/Videos/DainFolder"`
 
 ## Features
 * Static frame interpolation
