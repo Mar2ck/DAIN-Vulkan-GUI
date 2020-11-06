@@ -6,7 +6,7 @@ WIP Software so expect bugs, GUI soon™
 ## Download
 Windows | Linux | Google Colab
 :-: | :-: | :-:
-[![windows](https://i.imgur.com/tJlPSeC.png "Windows")](https://github.com/Mar2ck/DAIN-Vulkan-GUI/releases) | [![linux](https://i.imgur.com/76C8KZs.png "Linux")](https://github.com/Mar2ck/DAIN-Vulkan-GUI/releases) | [![colab](https://i.imgur.com/9bU9G1D.png "Google Colab")](https://colab.research.google.com/github/Mar2ck/DAIN-Vulkan-GUI/blob/master/DAINVulkanCLI-Colab.ipynb)
+[![windows](./res/windows-64x.png "Windows")](https://github.com/Mar2ck/DAIN-Vulkan-GUI/releases) | [![linux](./res/linux-64x.png "Linux")](https://github.com/Mar2ck/DAIN-Vulkan-GUI/releases) | [![colab](./res/colab-64x.png "Google Colab")](https://colab.research.google.com/github/Mar2ck/DAIN-Vulkan-GUI/blob/master/DAINVulkanCLI-Colab.ipynb)
 
 
 ## Usage
@@ -20,10 +20,11 @@ Linux: `./DAINVulkanCLI -i "/home/example/Videos/test.mp4" --output-folder "/hom
 * Cain-ncnn: 2x, 4x, 8x, etc. Multiplier-target
 * Multi-threading (-j)
 * Multi-gpu (-g)
-* Dynamic frame interpolation (duplicate frames are interpolated)
+* Dynamic interpolation (dain-ncnn) (duplicate frames are interpolated)
 * Dynamic 1x mode (framerate stays the same, duplicate frames are replaced with interpolations)
 
 ### Todo
+* Dynamic interpolation (cain-ncnn)
 * Perfect loop (Last frame leads into the first)
 * Framerate-target
 * Slow-mo mode (framerate stays the same, video is slowed down via interpolation)
