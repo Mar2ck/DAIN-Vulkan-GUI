@@ -5,7 +5,7 @@ from platform import system
 from shutil import which
 
 # Project root folder
-ROOT_DIR = os.path.dirname(__file__)
+ROOT_DIR = os.path.abspath(os.path.dirname(__file__))
 
 # Default parameters
 DEFAULT_FRAME_MULTIPLIER = 2
@@ -63,3 +63,6 @@ elif os.path.isfile(which("ffprobe")) is True:  # Else use the system version
     FFPROBE_BIN = os.path.normpath(which("ffprobe"))
 else:
     logging.warning("ffprobe not found")
+
+# RIFE Model location
+RIFE_MODEL = os.path.join(ROOT_DIR, "RIFE", "train_log")
