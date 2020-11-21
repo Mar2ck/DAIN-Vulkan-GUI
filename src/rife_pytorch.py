@@ -6,7 +6,6 @@ RIFE PyTorch implementation
 import os
 import pathlib
 import shutil
-import sys
 import warnings
 # Local modules
 import definitions
@@ -21,13 +20,13 @@ DEFAULT_MULTIPLIER = 2
 
 # Init device and model on import
 if torch.cuda.is_available():
-    print("Using PyTorch CUDA backend")
+    print("RIFE: Using PyTorch CUDA backend")
     pytorch_device = torch.device("cuda")
     torch.set_grad_enabled(False)
     torch.backends.cudnn.enabled = True
     torch.backends.cudnn.benchmark = True
 else:
-    print("Using PyTorch CPU backend")
+    print("RIFE: Using PyTorch CPU backend")
     pytorch_device = torch.device("cpu")
 
 rife_model = RIFE.Model()
@@ -73,7 +72,8 @@ def interpolate_file_mode(input0_file, input1_file, output_file):
                 (output[0] * 255).byte().cpu().numpy().transpose(1, 2, 0)[:height, :width])  # Write to output
 
 
-def interpolate_folder_mode(input_folder, output_folder):
+def interpolate_folder_mode(input_folder, output_folder, multiplier=DEFAULT_MULTIPLIER):
+    # TODO srite images during interpolation to avoid disk write bottleneck at end
     # List images in folder
     input_files_path = []
     for filePath in pathlib.Path(input_folder).glob('**/*'):  # List all files in the directory as their absolute path
@@ -93,18 +93,24 @@ def interpolate_folder_mode(input_folder, output_folder):
         input_files.append(_read_image(input_files_path[i]))
 
     # Interpolate
-    with alive_bar(len(input_files) * 2, enrich_print=False) as bar:
-        output_files = []
-        for j in range(len(input_files) - 1):
-            # print(input_files_path[j], input_files_path[j + 1])
-            mid = rife_model.inference(input_files[j], input_files[j + 1])
-            output_files.append(input_files[j])
-            bar()
-            output_files.append(mid)
-            bar()
-        for _ in range(2):  # Duplicate last frame twice
-            output_files.append(input_files[-1])
-            bar()
+    multiplier_internal = 1
+    while multiplier_internal < multiplier:
+        multiplier_internal = multiplier_internal * 2
+        print("Interpolating to {}x:".format(multiplier_internal))
+        with alive_bar(len(input_files) * 2, enrich_print=False) as bar:
+            output_files = []
+            for j in range(len(input_files) - 1):
+                # print(input_files_path[j], input_files_path[j + 1])
+                mid = rife_model.inference(input_files[j], input_files[j + 1])
+                output_files.append(input_files[j])
+                bar()
+                output_files.append(mid)
+                bar()
+            for _ in range(2):  # Duplicate last frame twice
+                output_files.append(input_files[-1])
+                bar()
+        if multiplier_internal < multiplier:
+            input_files = output_files
 
     if os.path.isdir(output_folder):  # Delete output_folder if it exists to avoid conflicts
         shutil.rmtree(output_folder)

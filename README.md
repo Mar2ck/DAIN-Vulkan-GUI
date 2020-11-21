@@ -18,13 +18,14 @@ Linux: `./DAINVulkanCLI -i "/home/example/Videos/test.mp4" --output-folder "/hom
 * Static frame interpolation
 * Dain-ncnn: 2x, 3x, 4x, 5x, etc. Multiplier-target
 * Cain-ncnn: 2x, 4x, 8x, etc. Multiplier-target
+* RIFE: 2x, 4x, 8x, etc. Multiplier-target
 * Multi-threading (-j)
 * Multi-gpu (-g)
 * Dynamic interpolation (dain-ncnn) (duplicate frames are interpolated)
 * Dynamic 1x mode (framerate stays the same, duplicate frames are replaced with interpolations)
 
 ### Todo
-* Dynamic interpolation (cain-ncnn)
+* Dynamic interpolation (cain-ncnn, RIFE)
 * Perfect loop (Last frame leads into the first)
 * Framerate-target
 * Slow-mo mode (framerate stays the same, video is slowed down via interpolation)
@@ -74,8 +75,8 @@ optional arguments:
                         Calculates frame multiplier based on a target
                         framerate
   -e INTERPOLATOR_ENGINE, --interpolator-engine INTERPOLATOR_ENGINE
-                        Pick interpolator: dain-ncnn, cain-ncnn (default=dain-
-                        ncnn)
+                        Pick interpolator: dain-ncnn, cain-ncnn, rife
+                        (default=dain-ncnn)
   --loop-video          [Unimplemented] Interpolates video as a loop (last
                         frame leads into the first)
   --duplicate-auto-delete DUPLICATE_AUTO_DELETE
@@ -105,6 +106,7 @@ optional arguments:
 Interpolation programs that this project is a wrapper for:
 * https://github.com/nihui/dain-ncnn-vulkan 
 * https://github.com/nihui/cain-ncnn-vulkan
+* https://github.com/hzwer/arXiv2020-RIFE
 
 All in one program for video decoding/encoding:
 * https://ffmpeg.org/ 

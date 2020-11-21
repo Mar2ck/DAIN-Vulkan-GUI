@@ -83,7 +83,7 @@ def main(input_file, output_folder, **kwargs):
         if interpolator_engine.startswith("dain-ncnn"):
             # Round up
             frame_multiplier = math.ceil(frame_multiplier_precise)
-        elif interpolator_engine.startswith("cain-ncnn"):
+        elif interpolator_engine.startswith(("cain-ncnn", "rife")):
             # Round up to next power of 2
             frame_multiplier = 2 ** (int(float(frame_multiplier_precise).hex().split('p+')[1]) + 1)
     print("Multiplier:", frame_multiplier)
@@ -157,6 +157,11 @@ def main(input_file, output_folder, **kwargs):
                                                             frame_multiplier, **interpolatorOptions)
                 currentInterpolatorFolder = folderInterpolatedFrames
                 infoJsonFile["outputSuffixes"].append("-Cain{}x".format(frame_multiplier))
+            elif interpolator_engine.startswith("rife"):
+                import rife_pytorch
+                rife_pytorch.interpolate_folder_mode(currentInterpolatorFolder, folderInterpolatedFrames, frame_multiplier)
+                currentInterpolatorFolder = folderInterpolatedFrames
+                infoJsonFile["outputSuffixes"].append("-Rife{}x".format(frame_multiplier))
             else:
                 print("Invalid interpolator option")
                 exit(1)
@@ -210,7 +215,7 @@ if __name__ == "__main__":
                         help="Frame multiplier 2x,3x,etc (default=2)")
     parser.add_argument("--target-fps", help="Calculates frame multiplier based on a target framerate")
     parser.add_argument("-e", "--interpolator-engine", default=definitions.DEFAULT_INTERPOLATOR_ENGINE,
-                        help="Pick interpolator: dain-ncnn, cain-ncnn (default=dain-ncnn)")
+                        help="Pick interpolator: dain-ncnn, cain-ncnn, rife (default=dain-ncnn)")
     parser.add_argument("--loop-video", action="store_true",
                         help="[Unimplemented] Interpolates video as a loop (last frame leads into the first)")
     parser.add_argument("--duplicate-auto-delete", type=float,
