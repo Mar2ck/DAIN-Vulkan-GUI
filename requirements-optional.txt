@@ -1,1 +1,8 @@
+# Used to accelerate duplicate frame detection with OpenCL, will fallback to cpu if not installed
 pyopencl>=2020.2.2
+# Used for RIFE (can use CPU-only or CUDA versions)
+torch>=1.7.0
+torchvision>=0.8.1
+#torch==1.7.0+cpu
+#torchvision==0.8.1+cpu
+opencv-python-headless>=4.4.0.46
