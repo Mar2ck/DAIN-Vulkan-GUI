@@ -32,6 +32,15 @@ CAIN_NCNN_VULKAN = {
 CAIN_NCNN_VULKAN_BIN = CAIN_NCNN_VULKAN[system()]
 CAIN_NCNN_VULKAN_LOCATION = Path(CAIN_NCNN_VULKAN_BIN).parent
 
+# Rife-ncnn-vulkan binary locations
+RIFE_NCNN_VULKAN = {
+    "Windows": os.path.join(ROOT_DIR, "dependencies", "rife-ncnn-vulkan", "rife-ncnn-vulkan.exe"),
+    "Darwin": os.path.join(ROOT_DIR, "dependencies", "rife-ncnn-vulkan", "rife-ncnn-vulkan-macos"),
+    "Linux": os.path.join(ROOT_DIR, "dependencies", "rife-ncnn-vulkan", "rife-ncnn-vulkan-ubuntu")
+}
+RIFE_NCNN_VULKAN_BIN = RIFE_NCNN_VULKAN[system()]
+RIFE_NCNN_VULKAN_LOCATION = Path(RIFE_NCNN_VULKAN_BIN).parent
+
 # FFmpeg binary locations
 FFMPEG = {
     "Windows": os.path.join(ROOT_DIR, "dependencies", "ffmpeg", "windows", "ffmpeg.exe"),
