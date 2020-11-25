@@ -17,8 +17,7 @@ Linux: `./DAINVulkanCLI -i "/home/example/Videos/test.mp4" --output-folder "/hom
 ## Features
 * Static frame interpolation
 * Dain-ncnn: 2x, 3x, 4x, 5x, etc. Multiplier-target
-* Cain-ncnn: 2x, 4x, 8x, etc. Multiplier-target
-* RIFE: 2x, 4x, 8x, etc. Multiplier-target
+* Cain-ncnn, Rife-ncnn: 2x, 4x, 8x, etc. Multiplier-target
 * Multi-threading (-j)
 * Multi-gpu (-g)
 * Dynamic interpolation (dain-ncnn) (duplicate frames are interpolated)
@@ -75,7 +74,7 @@ optional arguments:
                         Calculates frame multiplier based on a target
                         framerate
   -e INTERPOLATOR_ENGINE, --interpolator-engine INTERPOLATOR_ENGINE
-                        Pick interpolator: dain-ncnn, cain-ncnn, rife
+                        Pick interpolator: dain-ncnn, cain-ncnn, rife-ncnn
                         (default=dain-ncnn)
   --loop-video          [Unimplemented] Interpolates video as a loop (last
                         frame leads into the first)
@@ -106,6 +105,7 @@ optional arguments:
 Interpolation programs that this project is a wrapper for:
 * https://github.com/nihui/dain-ncnn-vulkan 
 * https://github.com/nihui/cain-ncnn-vulkan
+* https://github.com/nihui/rife-ncnn-vulkan
 * https://github.com/hzwer/arXiv2020-RIFE
 
 All in one program for video decoding/encoding:
