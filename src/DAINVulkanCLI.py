@@ -153,15 +153,23 @@ def main(input_file, output_folder, **kwargs):
                 currentInterpolatorFolder = folderInterpolatedFrames
                 infoJsonFile["outputSuffixes"].append("-Dain{}x".format(frame_multiplier))
             elif interpolator_engine.startswith("cain-ncnn"):
-                interpolator.cain_folder_multiplier_handler(currentInterpolatorFolder, folderInterpolatedFrames,
-                                                            frame_multiplier, **interpolatorOptions)
+                interpolator.folder_multiplier_handler(currentInterpolatorFolder, folderInterpolatedFrames,
+                                                       frame_multiplier, engine="cain-ncnn",
+                                                       **interpolatorOptions)
                 currentInterpolatorFolder = folderInterpolatedFrames
                 infoJsonFile["outputSuffixes"].append("-Cain{}x".format(frame_multiplier))
-            elif interpolator_engine.startswith("rife"):
-                import rife_pytorch
-                rife_pytorch.interpolate_folder_mode(currentInterpolatorFolder, folderInterpolatedFrames, frame_multiplier)
+            elif interpolator_engine.startswith("rife-ncnn"):
+                interpolator.folder_multiplier_handler(currentInterpolatorFolder, folderInterpolatedFrames,
+                                                       frame_multiplier, engine="rife-ncnn",
+                                                       **interpolatorOptions)
                 currentInterpolatorFolder = folderInterpolatedFrames
                 infoJsonFile["outputSuffixes"].append("-Rife{}x".format(frame_multiplier))
+            # elif interpolator_engine.startswith("rife"):
+            #     import rife_pytorch
+            #     rife_pytorch.interpolate_folder_mode(currentInterpolatorFolder, folderInterpolatedFrames,
+            #                                          frame_multiplier)
+            #     currentInterpolatorFolder = folderInterpolatedFrames
+            #     infoJsonFile["outputSuffixes"].append("-Rife{}x".format(frame_multiplier))
             else:
                 print("Invalid interpolator option")
                 exit(1)
@@ -215,7 +223,7 @@ if __name__ == "__main__":
                         help="Frame multiplier 2x,3x,etc (default=2)")
     parser.add_argument("--target-fps", help="Calculates frame multiplier based on a target framerate")
     parser.add_argument("-e", "--interpolator-engine", default=definitions.DEFAULT_INTERPOLATOR_ENGINE,
-                        help="Pick interpolator: dain-ncnn, cain-ncnn, rife (default=dain-ncnn)")
+                        help="Pick interpolator: dain-ncnn, cain-ncnn, rife-ncnn (default=dain-ncnn)")
     parser.add_argument("--loop-video", action="store_true",
                         help="[Unimplemented] Interpolates video as a loop (last frame leads into the first)")
     parser.add_argument("--duplicate-auto-delete", type=float,

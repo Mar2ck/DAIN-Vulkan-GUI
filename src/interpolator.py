@@ -8,6 +8,7 @@ import shutil
 # Local Modules
 import dain_ncnn_vulkan
 import cain_ncnn_vulkan
+import rife_ncnn_vulkan
 
 DEFAULT_MULTIPLIER = 2
 DEFAULT_MULTIPLIER_DYNAMIC = 1
@@ -27,40 +28,44 @@ def _make_duplicate_frames(input_file, output_folder, output_count):
         shutil.copyfile(*args)
 
 
-def cain_folder_multiplier_handler(input_folder, output_folder, multiplier, **kwargs):
+def folder_multiplier_handler(input_folder, output_folder, multiplier, engine, **kwargs):
     """
-    Achieve interpolation past 2x without using target_frames (which cain lacks)
+    Achieve interpolation past 2x without using target_frames (which cain/rife lacks)
     by interpolating from one folder to the next Eg. First (1x -> 2x) then (2x -> 4x)
     Multiplies to a power of 2
     """
     folderParent = pathlib.Path(output_folder).parent
     multiplierInternal = 1
-    cainFolderFrom = input_folder
-    cainFolderTo = None
+    interpolateFolderFrom = input_folder
+    interpolateFolderTo = None
     if not (multiplier > 1):
         raise ValueError("Multiplier must be higher than 1")
     else:
         if not ((multiplier & (multiplier - 1) == 0) and multiplier != 0):  # Check if not a power of 2
             raise ValueError("Multiplier must be a power of 2 (2, 4, 8, etc.)")
         else:
-            cainOutputFolders = []
+            interpolateOutputFolders = []
             while multiplierInternal < multiplier:
                 multiplierInternal = multiplierInternal * 2
-                print("From: \"{}\"".format(cainFolderFrom))
-                cainFolderTo = os.path.join(folderParent, ("cain-" + str(multiplierInternal) + "x"))
-                cainOutputFolders.append(cainFolderTo)
-                print("To: \"{}\"".format(cainFolderTo))
-
-                cain_ncnn_vulkan.interpolate_folder_mode(cainFolderFrom, cainFolderTo, **kwargs)
-                cainFolderFrom = cainFolderTo  # Set last output folder to the input folder for the next loop
-            print("Renaming \"{}\" to \"{}\"".format(cainFolderTo, output_folder))
+                print("From: \"{}\"".format(interpolateFolderFrom))
+                interpolateFolderTo = os.path.join(folderParent, ("interpolate-" + str(multiplierInternal) + "x"))
+                interpolateOutputFolders.append(interpolateFolderTo)
+                print("To: \"{}\"".format(interpolateFolderTo))
+                if engine == "cain-ncnn":
+                    cain_ncnn_vulkan.interpolate_folder_mode(interpolateFolderFrom, interpolateFolderTo, **kwargs)
+                elif engine == "rife-ncnn":
+                    rife_ncnn_vulkan.interpolate_folder_mode(interpolateFolderFrom, interpolateFolderTo, **kwargs)
+                else:
+                    raise ValueError("Invalid Engine")
+                interpolateFolderFrom = interpolateFolderTo  # Set last output folder to input folder for the next loop
+            print("Renaming \"{}\" to \"{}\"".format(interpolateFolderTo, output_folder))
             if os.path.isdir(output_folder) is True:
                 print("\"{}\" already exists, deleting".format(output_folder))
                 shutil.rmtree(output_folder)
-            os.rename(cainFolderTo, output_folder)
-            if cainOutputFolders[:-1]:
-                print("Deleting leftover folders:", cainOutputFolders[:-1])
-                for folder in cainOutputFolders[:-1]:
+            os.rename(interpolateFolderTo, output_folder)
+            if interpolateOutputFolders[:-1]:
+                print("Deleting leftover folders:", interpolateOutputFolders[:-1])
+                for folder in interpolateOutputFolders[:-1]:
                     shutil.rmtree(folder)
 
 
