@@ -84,8 +84,12 @@ def main(input_file, output_folder, **kwargs):
             # Round up
             frame_multiplier = math.ceil(frame_multiplier_precise)
         elif interpolator_engine.startswith(("cain-ncnn", "rife")):
-            # Round up to next power of 2
-            frame_multiplier = 2 ** (int(float(frame_multiplier_precise).hex().split('p+')[1]) + 1)
+            if (frame_multiplier_precise % 1) == 0 and (int(frame_multiplier_precise) & (int(frame_multiplier_precise) - 1) == 0):
+                # If number is decimal and is a power of 2
+                frame_multiplier = int(frame_multiplier_precise)
+            else:
+                # Else round up to next power of 2
+                frame_multiplier = 2 ** (int(float(frame_multiplier_precise).hex().split('p+')[1]) + 1)
     print("Multiplier:", frame_multiplier)
 
     # Setup working folder and predefined output folders
