@@ -140,12 +140,17 @@ def main(input_file, output_folder, **kwargs):
 
         # Dynamic interpolation
         if ("interpolation_mode" in kwargs) and (kwargs["interpolation_mode"] == "dynamic"):
-            folderDynamic = os.path.join(folderBase, "dynamic-1x")
-            interpolator.interpolate_dynamic(currentInterpolatorFolder, folderDynamic, infoJsonFile["extracted_frames"],
-                                             loop=loop_frames, **interpolatorOptions)
+            if interpolator_engine.startswith("dain-ncnn"):  # Timestep-based dynamic
+                folderDynamic = os.path.join(folderBase, "dynamic-1x")
+                interpolator.interpolate_dynamic(currentInterpolatorFolder, folderDynamic,
+                                                 infoJsonFile["extracted_frames"], loop=loop_frames,
+                                                 **interpolatorOptions)
 
-            currentInterpolatorFolder = folderDynamic
-            infoJsonFile["outputSuffixes"].append("-Dynamic1x".format(frame_multiplier))
+                currentInterpolatorFolder = folderDynamic
+                infoJsonFile["outputSuffixes"].append("-Dynamic1x".format(frame_multiplier))
+            else:  # Non-timestep dynamic
+                # TODO Add dynamic interpolation for engines without time-step
+                print("ERROR: Dynamic interpolation not currently supported by", interpolator_engine)
 
         # Static interpolation
         if frame_multiplier >= 2:
