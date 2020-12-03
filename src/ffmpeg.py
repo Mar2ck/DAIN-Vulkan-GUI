@@ -2,7 +2,7 @@
 FFmpeg process wrapper
 """
 # Built-in modules
-import logging
+# import logging
 import os
 import pathlib
 import re
@@ -20,7 +20,6 @@ def extract_frames(input_file, output_folder, verbose=False):
     `ffmpeg -i "$i" original_frames/%06d.png`
     """
     # TODO add downscaling option
-
     stream_metadata = ffprobe.analyze_video_stream_metadata(input_file)
     frame_count = int(stream_metadata["packetCount"])
     vfrBool = (stream_metadata["fpsReal"] != stream_metadata["fpsAverage"])  # Video is cfr when average fps = real fps
@@ -60,7 +59,6 @@ def encode_frames(input_folder, output_file, framerate, verbose=False):
     `ffmpeg -framerate 48 -i interpolated_frames/%06d.png -crf 18 output.mp4`
     """
     # TODO add an option for changing quality
-    # TODO add audio passthrough from the source video
     frame_count = len(os.listdir(input_folder))
     pathlib.Path(os.path.dirname(output_file)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
     cmd = [definitions.FFMPEG_BIN,
@@ -84,3 +82,15 @@ def encode_frames(input_folder, output_file, framerate, verbose=False):
                     frame_count_processed_last = frame_count_processed
                 elif verbose is True:
                     print(line, end="")
+
+
+def combine_video_audio(video_file, audio_file, output_file):
+    # ffmpeg -i video.mp4 -i audio.webm -c:v copy -map 0:v:0 -map 1:a:0 output.mp4
+    cmd = [definitions.FFMPEG_BIN,
+           "-i", video_file,
+           "-i", audio_file,
+           "-c:v", "copy",  # Don't reencode video stream
+           "-map", "0:v:0",
+           "-map", "1:a:0",
+           output_file]
+    subprocess.run(cmd)

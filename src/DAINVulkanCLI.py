@@ -199,6 +199,14 @@ def main(input_file, output_folder, **kwargs):
                              outputFile,
                              str(inputFileFps * frame_multiplier))
 
+        if ("copy_audio" in kwargs) and (kwargs["copy_audio"] is True):
+            print("Copying audio to output...")
+            infoJsonFile["outputSuffixes"].append("-audio")
+            last_output_file = outputFile
+            outputFile = os.path.join(folderOutputVideos, inputFileName + "".join(infoJsonFile["outputSuffixes"]) +
+                                      "." + video_type)
+            ffmpeg.combine_video_audio(last_output_file, inputFile, outputFile)
+
         if ("copy_mtime" in kwargs) and (kwargs["copy_mtime"] is True):  # Copy mtime to output
             print("Copying mtime to output...")
             inputFileModifiedTime = os.path.getmtime(inputFile)
@@ -249,6 +257,7 @@ if __name__ == "__main__":
     parser.add_argument("--video-type", default=definitions.DEFAULT_VIDEO_TYPE,
                         help="Video type for output video eg. mp4, webm, mkv (default=mp4)")
     parser.add_argument("--copy-mtime", action="store_true", help="Copy the modified timestamp to output")
+    parser.add_argument("--copy-audio", action="store_true", help="Copy the input audio to output")
     # Debug options
     parser.add_argument("--input-fps", type=float, help="Manually specify framerate of input video")
     parser.add_argument("--verbose", action="store_true", help="Print additional info to the commandline")
