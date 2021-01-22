@@ -15,13 +15,12 @@ import definitions
 from alive_progress import alive_bar
 
 # Interpolation Defaults
-DEFAULT_TILE_SIZE = 512
 DEFAULT_GPU_ID = "auto"
 DEFAULT_THREADS = "1:1:1"
 
 
 def interpolate_file_mode(input0_file, input1_file, output_file,
-                          tile_size=DEFAULT_TILE_SIZE, gpu_id=DEFAULT_GPU_ID, threads=DEFAULT_THREADS):
+                          gpu_id=DEFAULT_GPU_ID, threads=DEFAULT_THREADS):
     """File-mode Interpolation"""
     # Make sure parent folder of output_file exists
     pathlib.Path(os.path.dirname(output_file)).mkdir(parents=True, exist_ok=True)
@@ -29,7 +28,6 @@ def interpolate_file_mode(input0_file, input1_file, output_file,
            "-0", os.path.abspath(input0_file),
            "-1", os.path.abspath(input1_file),
            "-o", os.path.abspath(output_file),
-           "-t", str(tile_size),
            "-g", str(gpu_id),
            "-j", threads]
     print(" ".join(cmd))
@@ -37,7 +35,7 @@ def interpolate_file_mode(input0_file, input1_file, output_file,
 
 
 def interpolate_folder_mode(input_folder, output_folder,
-                            tile_size=DEFAULT_TILE_SIZE, gpu_id=DEFAULT_GPU_ID, threads=DEFAULT_THREADS,
+                            gpu_id=DEFAULT_GPU_ID, threads=DEFAULT_THREADS,
                             verbose=False):
     """Folder-mode Interpolation"""
     target_frames = len(os.listdir(input_folder)) * 2
@@ -49,7 +47,6 @@ def interpolate_folder_mode(input_folder, output_folder,
     cmd = [definitions.RIFE_NCNN_VULKAN_BIN,
            "-i", os.path.abspath(input_folder),
            "-o", os.path.abspath(output_folder),
-           "-t", str(tile_size),
            "-g", str(gpu_id),
            "-j", threads,
            "-v"]
@@ -64,8 +61,6 @@ def interpolate_folder_mode(input_folder, output_folder,
                     print(line, end="")
                 elif line.endswith("done\n"):  # Verbose progress output
                     bar()
-                elif line.startswith("invalid tilesize argument"):  # Tilesize error
-                    raise ValueError(line.replace("\n", ""))
                 elif line.startswith(("find_blob_index_by_name", "fopen")):  # Model not found error
                     raise OSError("Model not found: {}".format(line.replace("\n", "")))
                 elif line.startswith("vkAllocateMemory failed"):  # VRAM memory error
