@@ -29,7 +29,7 @@ def extract_frames(input_file, output_folder, verbose=False):
            "-i", input_file,
            "-vsync", "cfr",
            "-pix_fmt", "rgb24",  # Usually defaults to rgba which causes alpha problems
-           os.path.join(output_folder, "%06d.png")]
+           os.path.join(output_folder, "%08d.png")]
     if verbose is True:
         print(" ".join(cmd))
     # subprocess.run(cmd)
@@ -63,7 +63,7 @@ def encode_frames(input_folder, output_file, framerate, verbose=False):
     pathlib.Path(os.path.dirname(output_file)).mkdir(parents=True, exist_ok=True)  # Create parent folder of outputFile
     cmd = [definitions.FFMPEG_BIN,
            "-framerate", str(framerate),
-           "-i", os.path.join(input_folder, "%06d.png"),
+           "-i", os.path.join(input_folder, "%08d.png"),
            "-crf", "18",
            "-y",  # Always write file
            output_file]

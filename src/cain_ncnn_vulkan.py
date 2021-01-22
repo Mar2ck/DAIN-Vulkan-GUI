@@ -20,7 +20,7 @@ DEFAULT_THREADS = "1:1:1"
 
 
 def interpolate_file_mode(input0_file, input1_file, output_file,
-                          gpu_id=DEFAULT_GPU_ID, threads=DEFAULT_THREADS):
+                          gpu_id=DEFAULT_GPU_ID, threads=DEFAULT_THREADS, **kwargs):
     """File-mode Interpolation"""
     # Make sure parent folder of output_file exists
     pathlib.Path(os.path.dirname(output_file)).mkdir(parents=True, exist_ok=True)
@@ -36,7 +36,7 @@ def interpolate_file_mode(input0_file, input1_file, output_file,
 
 def interpolate_folder_mode(input_folder, output_folder,
                             gpu_id=DEFAULT_GPU_ID, threads=DEFAULT_THREADS,
-                            verbose=False):
+                            verbose=False, **kwargs):
     """Folder-mode Interpolation"""
     target_frames = len(os.listdir(input_folder)) * 2
 
